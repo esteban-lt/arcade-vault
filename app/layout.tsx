@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Press_Start_2P } from "next/font/google";
+import { AuthProvider } from "@/components/auth-provider";
+import { Nav } from "@/components/nav";
 import "./globals.css";
 
 const pressStart = Press_Start_2P({
@@ -35,7 +37,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* fondo decorativo: grilla en perspectiva + scanlines + ruido */}
         <div className="av-bg" aria-hidden="true" />
         <div className="av-noise" aria-hidden="true" />
-        <div className="av-main flex flex-col">{children}</div>
+        <AuthProvider>
+          <Nav />
+          <div className="av-main flex flex-col">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );
