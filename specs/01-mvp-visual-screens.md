@@ -30,6 +30,7 @@ El tema visual ya está en `app/globals.css` (clases `av-nav`, `av-grid`, `av-de
 - Datos simulados tipados en `lib/`: 8 juegos y puntuaciones deterministas con semilla.
 - Botones Google/GitHub en Auth, visibles pero inertes.
 - Texto de la UI en español; rutas, código, nombres y comentarios en inglés, con código limpio (nombres descriptivos, sin abreviaturas).
+- Excepción: los `id` y `title` de los juegos van en inglés (p. ej. `brick-buster` / `BRICK BUSTER`); sus descripciones siguen en español.
 
 **Fuera de alcance (para otras specs):**
 
@@ -40,7 +41,7 @@ El tema visual ya está en `app/globals.css` (clases `av-nav`, `av-grid`, `av-de
 - Contador de créditos dinámico (`CRÉDITOS · 03` es texto fijo).
 - Validación de formularios y mensajes de error de Auth.
 - Tests automatizados (el proyecto no tiene framework de pruebas).
-- Metadatos SEO por página y `generateStaticParams`.
+- Metadatos SEO por página.
 
 ---
 
@@ -52,7 +53,7 @@ export type GameCategory = "ARCADE" | "PUZZLE" | "SHOOTER" | "VERSUS";
 export type GameAccentColor = "cyan" | "magenta" | "green" | "yellow";
 
 export type Game = {
-  id: string;            // slug used in the URL, e.g. "bloque-buster"
+  id: string;            // slug used in the URL, e.g. "brick-buster"
   title: string;
   shortDescription: string;
   longDescription: string;
@@ -95,11 +96,11 @@ Antes de empezar: leer en `node_modules/next/dist/docs/01-app/01-getting-started
 2. **Sesión.** Crear `components/auth-provider.tsx` (`"use client"`) con `useAuth()` que expone `user`, `signIn(user)` y `signOut()`. Lee `arcade-vault:user` en un `useEffect` (no durante el render) para no romper la hidratación. Verificación: compila y envuelve el árbol sin cambios visuales.
 3. **Nav.** Crear `components/nav.tsx` (`"use client"`, usa `usePathname`) con logo, enlaces, créditos fijos, botón de sesión y panel móvil. Montarlo en `app/layout.tsx` junto con `AuthProvider`. Verificación: el nav se ve en `/` y el enlace "Biblioteca" aparece activo.
 4. **Biblioteca.** Crear `components/game-card.tsx` (cliente, con tilt) y `components/library.tsx` (cliente, con buscador y chips de categoría). Reemplazar `app/page.tsx` para que renderice `Library`. Las tarjetas enlazan a `/games/[id]`. Verificación: filtrar por texto y categoría; el estado vacío muestra "NO HAY RESULTADOS".
-5. **Detalle.** Crear `app/games/[id]/page.tsx` (Server Component) con portada, etiquetas, descripción, franja de estadísticas, acciones y ranking de 10 filas. Llamar a `notFound()` si el juego no existe. Verificación: `/games/caida` se renderiza y `/games/xyz` da 404.
+5. **Detalle.** Crear `app/games/[id]/page.tsx` (Server Component) con portada, etiquetas, descripción, franja de estadísticas, acciones y ranking de 10 filas. Llamar a `notFound()` si el juego no existe. Verificación: `/games/block-fall` se renderiza y `/games/xyz` da 404.
 6. **Auth.** Crear `app/auth/page.tsx` y `components/auth-form.tsx` (cliente) con pestañas, campos, botón de invitado y botones sociales inertes. Enviar el formulario llama a `signIn` y navega a `/`. "Jugar como invitado" llama a `signOut` y navega a `/`. Verificación: tras entrar el nav muestra el nombre en mayúsculas.
 7. **Reproductor.** Crear `app/games/[id]/play/page.tsx` (Server Component, valida el juego) y `components/game-player.tsx` (cliente) con HUD, arena decorativa, CRT, puntos simulados cada 220 ms, pausa, FIN y modal de fin de juego. Guardar escribe en `arcade-vault:scores:v1` y muestra el toast. Verificación: la puntuación sube sola, pausa la detiene, FIN abre el modal, "Jugar de nuevo" reinicia.
 8. **Salón de la Fama.** Crear `app/hall-of-fame/page.tsx` y `components/hall-of-fame.tsx` (cliente por las pestañas): podio, tabla con animación escalonada y fila "tu mejor marca" solo con sesión. Verificación: cambiar de pestaña cambia los datos; sin sesión no aparece la fila del usuario.
-9. **Revisión final de paridad.** Comparar cada pantalla con `references/templates/Arcade Vault.html` en escritorio y móvil, y corregir diferencias de estructura. Ejecutar `npm run lint` y `npm run build`.
+9. **Revisión final de paridad.** Comparar cada pantalla con `references/templates/Arcade Vault.html` en escritorio y móvil, y corregir diferencias de estructura. Ejecutar `npm run lint` y `npm run build`. El build exige `generateStaticParams` en `/games/[id]` y `/games/[id]/play` (por `cacheComponents: true`), y el lint exige ignorar `references/**` en `eslint.config.mjs`.
 
 ---
 
@@ -108,7 +109,7 @@ Antes de empezar: leer en `node_modules/next/dist/docs/01-app/01-getting-started
 - [ ] `npm run lint`, `npx tsc --noEmit` y `npm run build` terminan sin errores.
 - [ ] Existen las rutas `/`, `/games/[id]`, `/games/[id]/play`, `/hall-of-fame` y `/auth`, y cada una carga sin errores en la consola del navegador.
 - [ ] `/games/id-inexistente` y `/games/id-inexistente/play` responden con la página 404.
-- [ ] La Biblioteca muestra 8 tarjetas; filtrar por "PUZZLE" deja solo "CAÍDA"; buscar "zzz" muestra "NO HAY RESULTADOS".
+- [ ] La Biblioteca muestra 8 tarjetas; filtrar por "PUZZLE" deja solo "BLOCK FALL"; buscar "zzz" muestra "NO HAY RESULTADOS".
 - [ ] Mover el mouse sobre una tarjeta la inclina y al salir vuelve a su posición.
 - [ ] Hacer clic en una tarjeta o en "JUGAR" lleva a `/games/[id]` del juego correcto.
 - [ ] El Detalle muestra 10 filas de ranking, con las 3 primeras con estilo `top1`/`top2`/`top3`.
@@ -132,6 +133,7 @@ Antes de empezar: leer en `node_modules/next/dist/docs/01-app/01-getting-started
 
 - **Sí:** rutas reales del App Router. URLs compartibles y aprovecha Server Components. **No:** SPA de una sola página con estado de ruta, porque desaprovecha Next y rompe el botón "atrás".
 - **Sí:** rutas, archivos y código en inglés (`/games`, `/hall-of-fame`, `GameCard`); la UI sigue en español. Decisión del usuario. **No:** rutas en español.
+- **Sí:** `id` y `title` de los juegos en inglés (`BRICK BUSTER`, `BLOCK FALL`, `SERPENTINE`, `GLUTTON`, `INVADERS`, `ROCKS`, `FROG CROSSING`, `PIXEL DUEL`), como excepción a la regla de UI en español. Decisión del usuario: suenan más adecuados como nombres de juego arcade. **No:** traducir también las descripciones.
 - **Sí:** nombres descriptivos sin abreviaturas (`shortDescription`, no `short`). **No:** portar los nombres abreviados de las plantillas.
 - **Sí:** sesión simulada con context y `localStorage`. Permite revisar los estados con sesión e invitado. **No:** Auth solo visual, porque se pierden estados de Nav y Salón.
 - **Sí:** reproductor simulado con modal de fin de juego, como la plantilla. **No:** pantalla estática ni juego real; la lógica de juego va en otra spec.
@@ -140,6 +142,8 @@ Antes de empezar: leer en `node_modules/next/dist/docs/01-app/01-getting-started
 - **Sí:** reemplazar el hero de `app/page.tsx` por la Biblioteca, porque la plantilla ya incluye ese hero. **No:** mantener una home aparte.
 - **Sí:** claves de `localStorage` con prefijo `arcade-vault:` y versión en las puntuaciones. **No:** reutilizar `av_user` y `av_scores` de la plantilla.
 - **No:** footer global y créditos dinámicos (excluidos por el usuario / sin utilidad en un MVP visual).
+- **Sí:** `generateStaticParams` con los 8 ids en las rutas dinámicas. `next.config.ts` tiene `cacheComponents: true` y la guía de Next lo indica para `params` conocidos en build. **No:** `<Suspense>` (es para datos de petición como cookies o `searchParams`) ni `instant = false` (bloquea la carga).
+- **Sí:** ignorar `references/**` en ESLint, porque son plantillas JSX del navegador y no parte de la app.
 - **Sí:** puntuaciones deterministas con semilla, igual que las plantillas, para que servidor y cliente coincidan.
 
 ---
