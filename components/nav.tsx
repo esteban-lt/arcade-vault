@@ -5,11 +5,14 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 
+const HOME_PATH = "/";
+const GAMES_PATH = "/games";
 const HALL_OF_FAME_PATH = "/hall-of-fame";
+const ABOUT_PATH = "/about";
 const AUTH_PATH = "/auth";
 
 function isLibraryPath(pathname: string): boolean {
-  return pathname === "/" || pathname.startsWith("/games");
+  return pathname.startsWith(GAMES_PATH);
 }
 
 export function Nav() {
@@ -20,8 +23,10 @@ export function Nav() {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
   const activeClassName = (isActive: boolean) => (isActive ? "active" : undefined);
 
+  const isHomeActive = pathname === HOME_PATH;
   const isLibraryActive = isLibraryPath(pathname);
   const isHallOfFameActive = pathname === HALL_OF_FAME_PATH;
+  const isAboutActive = pathname === ABOUT_PATH;
   const isAuthActive = pathname === AUTH_PATH;
 
   const handleSignOut = () => {
@@ -32,18 +37,24 @@ export function Nav() {
   return (
     <>
       <nav className="av-nav">
-        <Link href="/" className="logo">
+        <Link href={HOME_PATH} className="logo">
           <div className="logo-mark"></div>
           <div className="logo-text neon-cyan">
             ARCADE <span className="neon-magenta">VAULT</span>
           </div>
         </Link>
         <div className="links">
-          <Link href="/" className={activeClassName(isLibraryActive)}>
+          <Link href={HOME_PATH} className={activeClassName(isHomeActive)}>
+            Inicio
+          </Link>
+          <Link href={GAMES_PATH} className={activeClassName(isLibraryActive)}>
             Biblioteca
           </Link>
           <Link href={HALL_OF_FAME_PATH} className={activeClassName(isHallOfFameActive)}>
             Salón de la Fama
+          </Link>
+          <Link href={ABOUT_PATH} className={activeClassName(isAboutActive)}>
+            Acerca de
           </Link>
         </div>
         <div className="spacer"></div>
@@ -84,7 +95,14 @@ export function Nav() {
         <div className="pixel neon-cyan" style={{ fontSize: 11, marginBottom: 16 }}>
           MENÚ
         </div>
-        <Link href="/" className={activeClassName(isLibraryActive)} onClick={closeMobileMenu}>
+        <Link href={HOME_PATH} className={activeClassName(isHomeActive)} onClick={closeMobileMenu}>
+          Inicio
+        </Link>
+        <Link
+          href={GAMES_PATH}
+          className={activeClassName(isLibraryActive)}
+          onClick={closeMobileMenu}
+        >
           Biblioteca
         </Link>
         <Link
@@ -94,8 +112,11 @@ export function Nav() {
         >
           Salón de la Fama
         </Link>
+        <Link href={ABOUT_PATH} className={activeClassName(isAboutActive)} onClick={closeMobileMenu}>
+          Acerca de
+        </Link>
         {user ? (
-          <Link href="/" onClick={handleSignOut}>
+          <Link href={GAMES_PATH} onClick={handleSignOut}>
             Cerrar sesión
           </Link>
         ) : (
