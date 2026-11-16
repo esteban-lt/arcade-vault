@@ -6,13 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Arcade Vault: a platform to play games online and compete for the highest score (see README.md). The README says the project follows Spec Driven Design (`/spec` and `/spec-impl`), using skills from `Klerith/fernando-skills` (`npx skills@latest add Klerith/fernando-skills`). The codebase is still the untouched Create Next App scaffold (`app/page.tsx` is the default starter page).
 
-## Commands
-
-- `npm run dev` — start dev server (Turbopack)
-- `npm run build` / `npm start` — production build / serve
-- `npm run lint` — ESLint (flat config in `eslint.config.mjs`, `eslint-config-next`)
-- No test runner is configured yet.
-
 ## Stack and conventions
 
 - Next.js 16.4.6, React 19.3, Tailwind CSS 4 (`@import "tailwindcss"` in `app/globals.css`, theme tokens via `@theme inline`), TypeScript strict.
