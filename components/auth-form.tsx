@@ -23,12 +23,12 @@ export function AuthForm() {
       .toUpperCase()
       .slice(0, MAXIMUM_PLAYER_NAME_LENGTH);
     signIn({ name: playerName });
-    router.push("/");
+    router.push("/games");
   };
 
   const handlePlayAsGuest = () => {
     signOut();
-    router.push("/");
+    router.push("/games");
   };
 
   return (
