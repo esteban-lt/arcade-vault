@@ -77,11 +77,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-select {
-  font: inherit;
-  color: inherit;
+/* En @layer base para que las clases de @layer components (.chip, .btn…) la sobreescriban. */
+@layer base {
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
 }
 
 a {
@@ -95,7 +98,8 @@ a {
 }
 
 /* foco visible para teclado (accesibilidad) */
-:focus-visible {
+/* inputs y selects quedan fuera: tienen su propio anillo de foco (en el contenedor o en el borde), sin doble ring */
+:focus-visible:not(input, select) {
   outline: 2px solid var(--cyan);
   outline-offset: 3px;
   box-shadow: 0 0 12px rgba(0, 245, 255, 0.45);
@@ -166,6 +170,9 @@ a {
 /* contenido principal dentro del frame de la app */
 .av-main {
   flex: 1;
+  /* por encima de .av-bg (z 0) y .av-noise (z 1), que son fixed y opacos */
+  position: relative;
+  z-index: 2;
 }
 
 @layer components {
