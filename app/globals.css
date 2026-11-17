@@ -1507,6 +1507,15 @@ a {
 
   .btn.press:active { transform: translateY(3px) scale(0.99); box-shadow: 0 0 6px rgba(0,245,255,0.2) inset; }
 
+  .form-error {
+    margin-bottom: 12px; padding: 10px 12px;
+    border: 1px solid var(--magenta); border-left-width: 4px;
+    background: rgba(255,0,110,0.08); color: var(--magenta);
+    font-family: var(--mono); font-size: 12px; line-height: 1.5; letter-spacing: 0.04em;
+    text-shadow: 0 0 6px rgba(255,0,110,0.4);
+    overflow-wrap: anywhere;
+  }
+
   .terminal-success { background: #000; border: 1px solid var(--green); box-shadow: 0 0 22px rgba(0,255,136,0.25); font-family: var(--mono); overflow: hidden; }
   .term-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #0a0a0f; border-bottom: 1px solid var(--line); }
   .term-bar .dot { width: 10px; height: 10px; border-radius: 50%; }
