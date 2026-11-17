@@ -1,6 +1,6 @@
 # SPEC 03 — Envío real del formulario de contacto con Resend
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 02
 > **Date:** 2026-11-16
 > **Objective:** Reemplazar el envío simulado del formulario de `/about` por una Server Action que valida los datos en el servidor y envía el mensaje por correo con Resend.
