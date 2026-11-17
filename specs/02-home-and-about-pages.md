@@ -1,6 +1,6 @@
 # SPEC 02 — Home en `/`, Acerca de en `/about` y Biblioteca en `/games`
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 01
 > **Date:** 2026-11-16
 > **Objective:** Reemplazar la ruta `/` por la landing de `references/templates/home-about/`, mover la Biblioteca actual a `/games` y añadir la página Acerca de en `/about`, siguiendo las convenciones de la SPEC 01.
