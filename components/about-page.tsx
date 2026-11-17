@@ -1,26 +1,29 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { sendContactMessage } from "@/app/about/actions";
 import { HighlightIcon } from "@/components/highlight-icon";
 import { useReveal } from "@/hooks/use-reveal";
+import { validateContactMessage, type ContactMessageInput } from "@/lib/contact";
 import { ABOUT_HIGHLIGHTS } from "@/lib/home";
 
 const DIVIDER_PIXELS_COUNT = 24;
 const SHAKE_DURATION_MS = 400;
+const SEND_ERROR_MESSAGE =
+  "NO PUDIMOS ENVIAR TU MENSAJE. REVISA TU CONEXIÓN E INTÉNTALO DE NUEVO.";
 
-type ContactFormValues = {
-  name: string;
-  email: string;
-  message: string;
-};
+const EMPTY_CONTACT_FORM: ContactMessageInput = { name: "", email: "", message: "", website: "" };
 
-const EMPTY_CONTACT_FORM: ContactFormValues = { name: "", email: "", message: "" };
+// Visually hidden, kept out of the tab order and screen readers: only bots fill it in.
+const HONEYPOT_STYLE = { position: "absolute", left: "-9999px", opacity: 0 } as const;
 
 export function AboutPage() {
   const pageRef = useReveal();
-  const [formValues, setFormValues] = useState<ContactFormValues>(EMPTY_CONTACT_FORM);
+  const [formValues, setFormValues] = useState<ContactMessageInput>(EMPTY_CONTACT_FORM);
   const [senderName, setSenderName] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState(false);
+  const [hasSendError, setHasSendError] = useState(false);
+  const [isSending, startSending] = useTransition();
 
   useEffect(() => {
     if (!isShaking) return;
@@ -28,21 +31,38 @@ export function AboutPage() {
     return () => clearTimeout(timeoutId);
   }, [isShaking]);
 
-  const updateField = (field: keyof ContactFormValues, value: string) =>
+  const updateField = (field: keyof ContactMessageInput, value: string) =>
     setFormValues((currentValues) => ({ ...currentValues, [field]: value }));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const hasEmptyField = Object.values(formValues).some((value) => !value.trim());
-    if (hasEmptyField) {
+    if (isSending) return;
+
+    if (validateContactMessage(formValues).length > 0) {
       setIsShaking(true);
       return;
     }
-    setSenderName(formValues.name.trim());
+
+    setHasSendError(false);
+    startSending(async () => {
+      try {
+        const result = await sendContactMessage(formValues);
+        if (result.status === "success") {
+          setSenderName(result.senderName);
+        } else if (result.status === "invalid") {
+          setIsShaking(true);
+        } else {
+          setHasSendError(true);
+        }
+      } catch {
+        setHasSendError(true);
+      }
+    });
   };
 
   const handleSendAnother = () => {
     setSenderName(null);
+    setHasSendError(false);
     setFormValues(EMPTY_CONTACT_FORM);
   };
 
@@ -138,8 +158,28 @@ export function AboutPage() {
                     placeholder="Cuéntanos qué tienes en mente…"
                   ></textarea>
                 </div>
-                <button className="btn xl press" type="submit" style={{ width: "100%" }}>
-                  ▶&nbsp; ENVIAR MENSAJE
+                <div style={HONEYPOT_STYLE} aria-hidden="true">
+                  <label htmlFor="contact-website">NO LLENAR ESTE CAMPO</label>
+                  <input
+                    id="contact-website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={formValues.website}
+                    onChange={(event) => updateField("website", event.target.value)}
+                  />
+                </div>
+                {hasSendError && (
+                  <div className="form-error" role="alert">
+                    {SEND_ERROR_MESSAGE}
+                  </div>
+                )}
+                <button
+                  className="btn xl press"
+                  type="submit"
+                  style={{ width: "100%" }}
+                  disabled={isSending}
+                >
+                  {isSending ? "ENVIANDO…" : "▶  ENVIAR MENSAJE"}
                 </button>
               </>
             ) : (
