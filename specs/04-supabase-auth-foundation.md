@@ -1,6 +1,6 @@
 # SPEC 04 — Cimientos de Supabase y autenticación real
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 01, SPEC 02
 > **Date:** 2026-11-17
 > **Objective:** Conectar la app a Supabase con `@supabase/ssr` y reemplazar la sesión simulada en localStorage por autenticación real con correo y contraseña, con un perfil de jugador (`profiles`) de username único.
