@@ -49,3 +49,6 @@ next-env.d.ts
 .playwright-cli/
 playwright-report/
 test-results/
+
+# local development references
+references/
