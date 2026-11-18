@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { GameCanvas, type GameCanvasHandle } from "@/components/game-canvas";
+import { findGameEngineFactory } from "@/lib/games/engine-registry";
+import type { GameSnapshot } from "@/lib/games/game-engine";
 import { saveScore } from "@/lib/score-storage";
 
 const GUEST_PLAYER_NAME = "INVITADO";
@@ -18,10 +21,15 @@ type GamePlayerProps = {
   gameTitle: string;
 };
 
-// Visual simulation only: the score grows on its own, there is no real game loop.
+// Games with a real engine (see engine-registry) run on a canvas and report their state;
+// the rest are a visual simulation: the score grows on its own, there is no real game loop.
 export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
   const { user } = useAuth();
+  const createEngine = findGameEngineFactory(gameId);
+  const canvasHandleRef = useRef<GameCanvasHandle>(null);
   const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(PLAYER_LIVES);
+  const [engineLevel, setEngineLevel] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [editedPlayerName, setEditedPlayerName] = useState<string | null>(null);
@@ -29,22 +37,70 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
 
   // The session loads after hydration, so the name is derived instead of copied into state.
   const playerName = editedPlayerName ?? user?.name ?? GUEST_PLAYER_NAME;
-  const level = 1 + Math.floor(score / POINTS_PER_LEVEL);
+  const level = createEngine ? engineLevel : 1 + Math.floor(score / POINTS_PER_LEVEL);
 
   useEffect(() => {
-    if (isGameOver || isPaused) return;
+    if (createEngine || isGameOver || isPaused) return;
     const intervalId = setInterval(() => {
       const points = MINIMUM_POINTS_PER_TICK + Math.floor(Math.random() * POINTS_RANGE_PER_TICK);
       setScore((currentScore) => currentScore + points);
     }, SCORE_TICK_MILLISECONDS);
     return () => clearInterval(intervalId);
-  }, [isGameOver, isPaused]);
+  }, [createEngine, isGameOver, isPaused]);
+
+  // Next keeps a page that was navigated away from alive but hidden, which destroys the
+  // engine and recreates it (fresh game) on return. Reset the UI state when hiding so the
+  // HUD, pause and game-over modal match that fresh game instead of the abandoned one.
+  useEffect(() => {
+    if (!createEngine) return;
+    return () => {
+      setScore(0);
+      setLives(PLAYER_LIVES);
+      setEngineLevel(1);
+      setIsPaused(false);
+      setIsGameOver(false);
+      setIsScoreSaved(false);
+    };
+  }, [createEngine]);
+
+  // P and Esc toggle the pause of a real engine; the player owns the pause state.
+  useEffect(() => {
+    if (!createEngine || isGameOver) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || (event.code !== "KeyP" && event.code !== "Escape")) return;
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      setIsPaused((paused) => !paused);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [createEngine, isGameOver]);
+
+  const handleSnapshotChange = (snapshot: GameSnapshot) => {
+    setScore(snapshot.score);
+    setLives(snapshot.lives);
+    setEngineLevel(snapshot.level);
+  };
+
+  const handleEngineGameOver = (finalScore: number) => {
+    setScore(finalScore);
+    setIsPaused(false);
+    setIsGameOver(true);
+  };
+
+  const endGame = () => {
+    if (createEngine) canvasHandleRef.current?.endGame();
+    else setIsGameOver(true);
+  };
 
   const restart = () => {
     setScore(0);
+    setLives(PLAYER_LIVES);
+    setEngineLevel(1);
     setIsPaused(false);
     setIsGameOver(false);
     setIsScoreSaved(false);
+    canvasHandleRef.current?.restart();
   };
 
   const handleSaveScore = () => {
@@ -66,7 +122,7 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
           </div>
           <div className="hud-stat lives">
             <div className="l">Vidas</div>
-            <div className="v">{Array(PLAYER_LIVES).fill("♥").join(" ")}</div>
+            <div className="v">{lives > 0 ? Array(lives).fill("♥").join(" ") : "—"}</div>
           </div>
           <div className="hud-stat level">
             <div className="l">Nivel</div>
@@ -77,7 +133,7 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
           <button type="button" className="btn yellow" onClick={() => setIsPaused((paused) => !paused)}>
             {isPaused ? "REANUDAR" : "PAUSA"}
           </button>
-          <button type="button" className="btn magenta" onClick={() => setIsGameOver(true)}>
+          <button type="button" className="btn magenta" onClick={endGame}>
             FIN
           </button>
           <Link href={`/games/${gameId}`} className="btn ghost">
@@ -88,13 +144,24 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
 
       <div className="crt">
         <div className="crt-screen">
-          <div className="game-arena">
-            <div className="grid-floor"></div>
-            <div className="enemy e1"></div>
-            <div className="enemy e2"></div>
-            <div className="enemy e3"></div>
-            <div className="player-ship"></div>
-          </div>
+          {createEngine ? (
+            <GameCanvas
+              createEngine={createEngine}
+              isPaused={isPaused}
+              handleRef={canvasHandleRef}
+              label={`Pantalla de juego de ${gameTitle}`}
+              onSnapshotChange={handleSnapshotChange}
+              onGameOver={handleEngineGameOver}
+            />
+          ) : (
+            <div className="game-arena">
+              <div className="grid-floor"></div>
+              <div className="enemy e1"></div>
+              <div className="enemy e2"></div>
+              <div className="enemy e3"></div>
+              <div className="player-ship"></div>
+            </div>
+          )}
           {isPaused && (
             <div className="crt-content" style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}>
               <div>
