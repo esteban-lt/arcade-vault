@@ -111,6 +111,18 @@ export const GAMES: Game[] = [
     bestScore: 24,
     playsLabel: "4.2K",
   },
+  {
+    id: "asteroids",
+    title: "ASTEROIDS",
+    shortDescription: "Sobrevive a la lluvia de rocas en el vacío.",
+    longDescription:
+      "Pilota una nave con inercia por un campo de asteroides que se parten en fragmentos cada vez más rápidos. Recoge el disparo triple, limpia cada oleada y aguanta con tus tres vidas.",
+    category: "SHOOTER",
+    coverClassName: "cover-asteroids",
+    accentColor: "cyan",
+    bestScore: 0,
+    playsLabel: "NUEVO",
+  },
 ];
 
 export const CATEGORY_FILTERS: GameCategoryFilter[] = [
