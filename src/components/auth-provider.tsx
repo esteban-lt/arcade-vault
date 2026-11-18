@@ -9,40 +9,71 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  readStoredSessionUser,
-  storeSessionUser,
-  type SessionUser,
-} from "@/lib/session";
+import type { SessionUser } from "@/lib/profile";
+import { createClient } from "@/lib/supabase/client";
 
 type AuthContextValue = {
   user: SessionUser | null;
-  signIn: (user: SessionUser) => void;
-  signOut: () => void;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Starts as a guest so the server and first client render match; the stored session loads after mount.
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const [supabase] = useState(createClient);
+  // Starts as a guest so the server and first client render match; the session loads after mount.
+  const [authenticatedUserId, setAuthenticatedUserId] = useState<string | null>(null);
+  const [loadedUser, setLoadedUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after hydration
-    setUser(readStoredSessionUser());
-  }, []);
+    let isActive = true;
 
-  const signIn = useCallback((nextUser: SessionUser) => {
-    setUser(nextUser);
-    storeSessionUser(nextUser);
-  }, []);
+    // getUser validates the session against the Auth server, unlike the locally stored one.
+    supabase.auth.getUser().then(({ data }) => {
+      if (isActive) setAuthenticatedUserId(data.user?.id ?? null);
+    });
 
-  const signOut = useCallback(() => {
-    setUser(null);
-    storeSessionUser(null);
-  }, []);
+    // Only the user id is read here: Supabase calls inside this callback can deadlock.
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthenticatedUserId(session?.user.id ?? null);
+    });
 
-  const value = useMemo(() => ({ user, signIn, signOut }), [user, signIn, signOut]);
+    return () => {
+      isActive = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!authenticatedUserId) return;
+
+    let isActive = true;
+
+    supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", authenticatedUserId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!isActive) return;
+        setLoadedUser(
+          data ? { id: authenticatedUserId, name: data.username.toUpperCase() } : null,
+        );
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [supabase, authenticatedUserId]);
+
+  // Derived, so signing out clears the user immediately without a setState in an effect.
+  const user = loadedUser?.id === authenticatedUserId ? loadedUser : null;
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, [supabase]);
+
+  const value = useMemo(() => ({ user, signOut }), [user, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
