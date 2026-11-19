@@ -1231,6 +1231,7 @@ a {
   .hall-head p { color: var(--ink-dim); margin: 12px 0 0; letter-spacing: 0.1em; }
 
   .hall-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 22px; }
+  .hall-tabs .chip { display: inline-block; text-decoration: none; }
   .podium {
     display: grid;
     grid-template-columns: 1fr 1.2fr 1fr;
