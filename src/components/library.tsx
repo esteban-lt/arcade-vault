@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { GameCard } from "@/components/game-card";
 import { CATEGORY_FILTERS, GAMES, type GameCategoryFilter } from "@/lib/games";
+import type { GameStats } from "@/lib/leaderboard-format";
 
-export function Library() {
+// The stats arrive as a promise so the search and filters render (and keep their state)
+// while each card waits for its best score.
+export function Library({ gameStatsPromise }: { gameStatsPromise: Promise<Record<string, GameStats>> }) {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<GameCategoryFilter>("TODOS");
 
@@ -50,7 +53,7 @@ export function Library() {
 
       <div className="av-grid">
         {visibleGames.map((game) => (
-          <GameCard key={game.id} game={game} />
+          <GameCard key={game.id} game={game} gameStatsPromise={gameStatsPromise} />
         ))}
         {visibleGames.length === 0 && (
           <div

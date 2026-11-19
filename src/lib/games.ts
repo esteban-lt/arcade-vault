@@ -10,8 +10,6 @@ export type Game = {
   category: GameCategory;
   coverClassName: string;
   accentColor: GameAccentColor;
-  bestScore: number;
-  playsLabel: string;
 };
 
 export const GAMES: Game[] = [
@@ -24,8 +22,6 @@ export const GAMES: Game[] = [
     category: "ARCADE",
     coverClassName: "cover-bricks",
     accentColor: "cyan",
-    bestScore: 28450,
-    playsLabel: "12.4K",
   },
   {
     id: "block-fall",
@@ -36,8 +32,6 @@ export const GAMES: Game[] = [
     category: "PUZZLE",
     coverClassName: "cover-tetro",
     accentColor: "magenta",
-    bestScore: 184220,
-    playsLabel: "31.8K",
   },
   {
     id: "serpentine",
@@ -48,8 +42,6 @@ export const GAMES: Game[] = [
     category: "ARCADE",
     coverClassName: "cover-snake",
     accentColor: "green",
-    bestScore: 7820,
-    playsLabel: "9.1K",
   },
   {
     id: "glutton",
@@ -60,8 +52,6 @@ export const GAMES: Game[] = [
     category: "ARCADE",
     coverClassName: "cover-glot",
     accentColor: "yellow",
-    bestScore: 96400,
-    playsLabel: "27.2K",
   },
   {
     id: "invaders",
@@ -72,8 +62,6 @@ export const GAMES: Game[] = [
     category: "SHOOTER",
     coverClassName: "cover-invaders",
     accentColor: "green",
-    bestScore: 54190,
-    playsLabel: "18.0K",
   },
   {
     id: "rocks",
@@ -84,8 +72,6 @@ export const GAMES: Game[] = [
     category: "SHOOTER",
     coverClassName: "cover-rocas",
     accentColor: "yellow",
-    bestScore: 41200,
-    playsLabel: "15.6K",
   },
   {
     id: "frog-crossing",
@@ -96,8 +82,6 @@ export const GAMES: Game[] = [
     category: "ARCADE",
     coverClassName: "cover-rana",
     accentColor: "green",
-    bestScore: 18900,
-    playsLabel: "6.4K",
   },
   {
     id: "pixel-duel",
@@ -108,8 +92,6 @@ export const GAMES: Game[] = [
     category: "VERSUS",
     coverClassName: "cover-duelo",
     accentColor: "cyan",
-    bestScore: 24,
-    playsLabel: "4.2K",
   },
   {
     id: "asteroids",
@@ -120,8 +102,6 @@ export const GAMES: Game[] = [
     category: "SHOOTER",
     coverClassName: "cover-asteroids",
     accentColor: "cyan",
-    bestScore: 0,
-    playsLabel: "NUEVO",
   },
 ];
 
