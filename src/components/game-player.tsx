@@ -6,15 +6,18 @@ import { useAuth } from "@/components/auth-provider";
 import { GameCanvas, type GameCanvasHandle } from "@/components/game-canvas";
 import { findGameEngineFactory } from "@/lib/games/engine-registry";
 import type { GameSnapshot } from "@/lib/games/game-engine";
-import { saveScore } from "@/lib/score-storage";
+import { isValidScore } from "@/lib/leaderboard-format";
+import { saveScoreAction } from "@/app/games/[id]/play/actions";
 
 const GUEST_PLAYER_NAME = "INVITADO";
-const MAXIMUM_PLAYER_NAME_LENGTH = 10;
 const PLAYER_LIVES = 3;
 const SCORE_TICK_MILLISECONDS = 220;
 const MINIMUM_POINTS_PER_TICK = 10;
 const POINTS_RANGE_PER_TICK = 90;
 const POINTS_PER_LEVEL = 2500;
+
+// "unauthenticated" happens when the session expired between playing and saving.
+type SaveStatus = "idle" | "saving" | "saved" | "unauthenticated" | "invalid" | "error";
 
 type GamePlayerProps = {
   gameId: string;
@@ -32,11 +35,10 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
   const [engineLevel, setEngineLevel] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [editedPlayerName, setEditedPlayerName] = useState<string | null>(null);
-  const [isScoreSaved, setIsScoreSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   // The session loads after hydration, so the name is derived instead of copied into state.
-  const playerName = editedPlayerName ?? user?.name ?? GUEST_PLAYER_NAME;
+  const playerName = user?.name ?? GUEST_PLAYER_NAME;
   const level = createEngine ? engineLevel : 1 + Math.floor(score / POINTS_PER_LEVEL);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
       setEngineLevel(1);
       setIsPaused(false);
       setIsGameOver(false);
-      setIsScoreSaved(false);
+      setSaveStatus("idle");
     };
   }, [createEngine]);
 
@@ -99,13 +101,55 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
     setEngineLevel(1);
     setIsPaused(false);
     setIsGameOver(false);
-    setIsScoreSaved(false);
+    setSaveStatus("idle");
     canvasHandleRef.current?.restart();
   };
 
-  const handleSaveScore = () => {
-    saveScore({ gameId, playerName, score });
-    setIsScoreSaved(true);
+  const handleSaveScore = async () => {
+    setSaveStatus("saving");
+    try {
+      const result = await saveScoreAction(gameId, score);
+      setSaveStatus(result.status);
+    } catch {
+      // Network failure or server crash: the action never answered.
+      setSaveStatus("error");
+    }
+  };
+
+  const renderSaveArea = () => {
+    if (!createEngine) {
+      return <div className="save-notice">PARTIDA DE DEMOSTRACIÓN: NO SE GUARDA</div>;
+    }
+    if (!isValidScore(score)) return null;
+    if (!user || saveStatus === "unauthenticated") {
+      return (
+        <div className="save-notice">
+          <Link href="/auth">INICIA SESIÓN PARA GUARDAR TU PUNTUACIÓN</Link>
+        </div>
+      );
+    }
+    if (saveStatus === "saved") return <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>;
+    if (saveStatus === "invalid") {
+      return (
+        <div className="form-error save-feedback" role="alert">
+          ESTA PUNTUACIÓN NO SE PUEDE GUARDAR.
+        </div>
+      );
+    }
+
+    const isSaving = saveStatus === "saving";
+    return (
+      <div className="save-row">
+        {saveStatus === "error" && (
+          <div className="form-error save-feedback" role="alert">
+            NO SE PUDO GUARDAR LA PUNTUACIÓN. REVISA TU CONEXIÓN E INTÉNTALO DE NUEVO.
+          </div>
+        )}
+        <button type="button" className="btn yellow" onClick={handleSaveScore} disabled={isSaving}>
+          {isSaving ? "GUARDANDO…" : saveStatus === "error" ? "REINTENTAR" : "GUARDAR PUNTUACIÓN"}
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -189,23 +233,7 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
             <h2>FIN DEL JUEGO</h2>
             <div className="final-label">PUNTUACIÓN FINAL</div>
             <div className="final">{score.toLocaleString("es-ES")}</div>
-            {isScoreSaved ? (
-              <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
-            ) : (
-              <div className="input-row">
-                <input
-                  value={playerName}
-                  onChange={(event) =>
-                    setEditedPlayerName(event.target.value.toUpperCase().slice(0, MAXIMUM_PLAYER_NAME_LENGTH))
-                  }
-                  placeholder="TUS INICIALES"
-                  aria-label="Tus iniciales"
-                />
-                <button type="button" className="btn yellow" onClick={handleSaveScore}>
-                  GUARDAR PUNTUACIÓN
-                </button>
-              </div>
-            )}
+            {renderSaveArea()}
             <div className="actions">
               <button type="button" className="btn" onClick={restart}>
                 JUGAR DE NUEVO
