@@ -113,6 +113,16 @@ export const GAMES: Game[] = [
     coverClassName: "cover-block-stack",
     accentColor: "yellow",
   },
+  {
+    id: "wall-breaker",
+    title: "WALL BREAKER",
+    shortDescription: "Desvía la pelota con la paleta y derriba muros de bloques.",
+    longDescription:
+      "Mueve la paleta con las flechas o el ratón y mantén la pelota en juego para romper cada bloque del muro. Son cinco muros con patrones distintos, y en cada uno la pelota va un 10 % más rápida. Tienes tres vidas para limpiarlos todos.",
+    category: "ARCADE",
+    coverClassName: "cover-wall-breaker",
+    accentColor: "magenta",
+  },
 ];
 
 export const CATEGORY_FILTERS: GameCategoryFilter[] = [

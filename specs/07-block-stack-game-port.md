@@ -1,6 +1,6 @@
 # SPEC 07 — Port del juego de bloques que caen a TypeScript (BLOCK STACK)
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 05, SPEC 06
 > **Date:** 2026-11-19
 > **Objective:** Portar el juego de bloques de `references/started-games/03-tetris` a un motor TypeScript sobre canvas, conectado al Reproductor de `/games/block-stack/play`, con su tarjeta BLOCK STACK en el catálogo y sus puntuaciones en el leaderboard.
