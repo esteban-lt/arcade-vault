@@ -1,11 +1,10 @@
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../shared/canvas";
 import {
   ASTEROID_RADIUS_BY_SIZE,
   ASTEROID_SPEED_BY_SIZE,
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
   type AsteroidSize,
 } from "./constants";
-import { randomBetween, randomIntegerBetween, wrapCoordinate } from "./math";
+import { randomBetween, randomIntegerBetween, wrapCoordinate } from "../shared/math";
 
 type Vertex = readonly [x: number, y: number];
 

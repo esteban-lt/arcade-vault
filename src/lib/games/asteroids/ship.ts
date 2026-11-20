@@ -1,12 +1,11 @@
 import { Bullet } from "./bullet";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../shared/canvas";
 import {
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
   SPAWN_INVINCIBILITY_SECONDS,
   TRIPLE_SHOT_SPREAD_RADIANS,
 } from "./constants";
-import type { KeyboardInput } from "./keyboard-input";
-import { randomBetween, wrapCoordinate } from "./math";
+import type { KeyboardInput } from "../shared/keyboard-input";
+import { randomBetween, wrapCoordinate } from "../shared/math";
 
 const ROTATION_SPEED_RADIANS_PER_SECOND = 3.5;
 const THRUST_PIXELS_PER_SECOND_SQUARED = 260;

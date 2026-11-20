@@ -1,4 +1,4 @@
-import { randomBetween } from "./math";
+import { randomBetween } from "../shared/math";
 
 const TRAIL_LENGTH_FACTOR = 0.05;
 

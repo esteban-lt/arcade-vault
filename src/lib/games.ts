@@ -103,6 +103,16 @@ export const GAMES: Game[] = [
     coverClassName: "cover-asteroids",
     accentColor: "cyan",
   },
+  {
+    id: "block-stack",
+    title: "BLOCK STACK",
+    shortDescription: "Gira y encaja bloques que caen para limpiar líneas.",
+    longDescription:
+      "Siete piezas de cuatro bloques caen sobre un pozo de 10×20. Muévelas, gíralas o suéltalas de golpe para completar filas, guiado por la sombra que marca dónde aterrizarán. Cada 10 líneas sube el nivel y la caída se acelera.",
+    category: "PUZZLE",
+    coverClassName: "cover-block-stack",
+    accentColor: "yellow",
+  },
 ];
 
 export const CATEGORY_FILTERS: GameCategoryFilter[] = [
