@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/games/asteroids/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/games/shared/canvas";
 import type { GameEngine, GameEngineCallbacks, GameEngineFactory } from "@/lib/games/game-engine";
 
 export type GameCanvasHandle = {

@@ -1,5 +1,6 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, POWER_UP_LIFETIME_SECONDS } from "./constants";
-import { randomBetween, wrapCoordinate } from "./math";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../shared/canvas";
+import { POWER_UP_LIFETIME_SECONDS } from "./constants";
+import { randomBetween, wrapCoordinate } from "../shared/math";
 
 const POWER_UP_RADIUS = 12;
 const BLINK_WHEN_REMAINING_BELOW_SECONDS = 2;

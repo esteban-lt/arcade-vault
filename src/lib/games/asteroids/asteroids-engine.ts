@@ -3,20 +3,19 @@ import type { Bullet } from "./bullet";
 import {
   ASTEROID_POINTS_BY_SIZE,
   ASTEROID_SAFE_DISTANCE,
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
+  GAME_KEY_CODES,
   INITIAL_ASTEROID_COUNT,
   INITIAL_LIVES,
-  MAXIMUM_FRAME_SECONDS,
   POWER_UP_DROP_CHANCE,
   POWER_UP_DURATION_SECONDS,
   POWER_UP_GUARANTEED_AFTER_KILLS,
   RESPAWN_DELAY_SECONDS,
   SHIP_COLLISION_RADIUS_FACTOR,
 } from "./constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, MAXIMUM_FRAME_SECONDS } from "../shared/canvas";
 import type { GameEngine, GameEngineCallbacks, GameEngineFactory, GameSnapshot } from "../game-engine";
-import { KeyboardInput } from "./keyboard-input";
-import { distanceBetween, randomBetween } from "./math";
+import { KeyboardInput } from "../shared/keyboard-input";
+import { distanceBetween, randomBetween } from "../shared/math";
 import { Particle } from "./particle";
 import { PowerUp } from "./power-up";
 import { Ship } from "./ship";
@@ -29,7 +28,7 @@ const PARTICLES_PER_ASTEROID_SIZE = 5;
 class AsteroidsEngine implements GameEngine {
   private readonly context: CanvasRenderingContext2D;
   private readonly callbacks: GameEngineCallbacks;
-  private readonly input = new KeyboardInput();
+  private readonly input = new KeyboardInput(GAME_KEY_CODES);
 
   private ship = new Ship();
   private bullets: Bullet[] = [];

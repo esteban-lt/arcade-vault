@@ -1,5 +1,5 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
-import { wrapCoordinate } from "./math";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../shared/canvas";
+import { wrapCoordinate } from "../shared/math";
 
 const BULLET_SPEED = 520;
 const BULLET_LIFETIME_SECONDS = 1.1;

@@ -1,13 +1,3 @@
-// Keys the game uses. While input is attached, the browser's default action for them
-// (page scroll, "click" on a focused button) is suppressed.
-const GAME_KEY_CODES: ReadonlySet<string> = new Set([
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowUp",
-  "ArrowDown",
-  "Space",
-]);
-
 function isTextEntryTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return (
@@ -21,6 +11,14 @@ export class KeyboardInput {
   private readonly heldKeyCodes = new Set<string>();
   private readonly pressedKeyCodes = new Set<string>();
   private isAttached = false;
+
+  // Keys the game uses. While input is attached, the browser's default action for them
+  // (page scroll, "click" on a focused button) is suppressed.
+  private readonly gameKeyCodes: ReadonlySet<string>;
+
+  constructor(gameKeyCodes: readonly string[]) {
+    this.gameKeyCodes = new Set(gameKeyCodes);
+  }
 
   attach(): void {
     if (this.isAttached) return;
@@ -49,14 +47,14 @@ export class KeyboardInput {
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
     if (isTextEntryTarget(event.target)) return;
-    if (GAME_KEY_CODES.has(event.code)) event.preventDefault();
+    if (this.gameKeyCodes.has(event.code)) event.preventDefault();
     if (!this.heldKeyCodes.has(event.code)) this.pressedKeyCodes.add(event.code);
     this.heldKeyCodes.add(event.code);
   };
 
   private readonly handleKeyUp = (event: KeyboardEvent): void => {
     if (isTextEntryTarget(event.target)) return;
-    if (GAME_KEY_CODES.has(event.code)) event.preventDefault();
+    if (this.gameKeyCodes.has(event.code)) event.preventDefault();
     this.heldKeyCodes.delete(event.code);
   };
 }
