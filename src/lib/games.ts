@@ -123,6 +123,16 @@ export const GAMES: Game[] = [
     coverClassName: "cover-wall-breaker",
     accentColor: "magenta",
   },
+  {
+    id: "fruit-snake",
+    title: "FRUIT SNAKE",
+    shortDescription: "Guía la serpiente, come frutas y no choques contra nada.",
+    longDescription:
+      "Mueve la serpiente con las flechas o WASD por un tablero de 40×30 casillas. Cada fruta la alarga una casilla y suma 10 puntos por nivel. Cada 5 frutas sube el nivel y la serpiente se acelera, y un choque contra el borde o contra tu propio cuerpo termina la partida.",
+    category: "ARCADE",
+    coverClassName: "cover-fruit-snake",
+    accentColor: "green",
+  },
 ];
 
 export const CATEGORY_FILTERS: GameCategoryFilter[] = [
