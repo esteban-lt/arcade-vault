@@ -1,6 +1,6 @@
 # SPEC 09 — Juego FRUIT SNAKE
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 05, SPEC 06, SPEC 07
 > **Date:** 2026-11-19
 > **Objective:** Crear el juego de serpiente FRUIT SNAKE como motor TypeScript sobre canvas, conectado al Reproductor de `/games/fruit-snake/play`, con su tarjeta en el catálogo y sus puntuaciones en el leaderboard.
