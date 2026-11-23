@@ -17,6 +17,7 @@ import {
 } from "./constants";
 import { HeldKeyRepeater } from "./held-key-repeater";
 import { createRandomPiece, findLandingRow, tryRotatePiece } from "./piece";
+import { DEFAULT_SKIN_ID, SKINS, type SkinId } from "./skins";
 
 type BlockStackPhase = "playing" | "game-over";
 
@@ -39,7 +40,9 @@ class BlockStackEngine implements GameEngine {
   private isPaused = false;
   private animationFrameId: number | null = null;
   private lastTimestamp: number | null = null;
+  private clockSeconds = 0; // rAF time, drives skin animations only
   private lastEmittedSnapshot: GameSnapshot | null = null;
+  private skinId: SkinId = DEFAULT_SKIN_ID;
 
   constructor(canvas: HTMLCanvasElement, callbacks: GameEngineCallbacks) {
     const context = canvas.getContext("2d");
@@ -71,6 +74,14 @@ class BlockStackEngine implements GameEngine {
     if (this.animationFrameId !== null) cancelAnimationFrame(this.animationFrameId);
     this.animationFrameId = null;
     this.input.detach();
+  }
+
+  // ── Skin ──────────────────────────────────────────────────────────────────────
+
+  // Called by the player (selector and saved skin). The loop redraws every frame, also while
+  // paused and after game over, so the new skin shows on the next frame.
+  setSkin(skinId: SkinId): void {
+    this.skinId = skinId;
   }
 
   // ── Game state ────────────────────────────────────────────────────────────────
@@ -117,6 +128,7 @@ class BlockStackEngine implements GameEngine {
   // ── Update ────────────────────────────────────────────────────────────────────
 
   private readonly loop = (timestamp: number): void => {
+    this.clockSeconds = timestamp / 1000;
     if (this.isPaused) {
       // Forget the timestamp so resuming does not count the paused time, and discard
       // key presses made while paused so they do not fire when the game resumes.
@@ -241,13 +253,18 @@ class BlockStackEngine implements GameEngine {
   // ── Draw ──────────────────────────────────────────────────────────────────────
 
   private draw(): void {
-    drawBlockStack(this.context, {
-      board: this.board,
-      currentPiece: this.currentPiece,
-      ghostRow: findLandingRow(this.board, this.currentPiece),
-      nextPiece: this.nextPiece,
-      clearedLineCount: this.clearedLineCount,
-    });
+    drawBlockStack(
+      this.context,
+      {
+        board: this.board,
+        currentPiece: this.currentPiece,
+        ghostRow: findLandingRow(this.board, this.currentPiece),
+        nextPiece: this.nextPiece,
+        clearedLineCount: this.clearedLineCount,
+        clockSeconds: this.clockSeconds,
+      },
+      SKINS[this.skinId],
+    );
   }
 }
 
