@@ -6,6 +6,9 @@ import { useAuth } from "@/components/auth-provider";
 import { GameCanvas, type GameCanvasHandle } from "@/components/game-canvas";
 import { findGameEngineFactory } from "@/lib/games/engine-registry";
 import type { GameSnapshot } from "@/lib/games/game-engine";
+import { isSkinId, SKIN_IDS, SKIN_LABELS } from "@/lib/games/shared/skins";
+import { hasGlobalSkins } from "@/lib/games/skin-registry";
+import { useStoredSkin } from "@/lib/use-stored-skin";
 import { isValidScore } from "@/lib/leaderboard-format";
 import { saveScoreAction } from "@/app/games/[id]/play/actions";
 
@@ -30,6 +33,9 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
   const { user } = useAuth();
   const createEngine = findGameEngineFactory(gameId);
   const canvasHandleRef = useRef<GameCanvasHandle>(null);
+  // Games in the skin registry take their skin from here; the rest handle it themselves.
+  const usesGlobalSkins = hasGlobalSkins(gameId);
+  const { skinId, setSkinId, isReady: isSkinReady } = useStoredSkin(gameId);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(PLAYER_LIVES);
   const [engineLevel, setEngineLevel] = useState(1);
@@ -174,6 +180,24 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
           </div>
         </div>
         <div className="hud-actions">
+          {createEngine && usesGlobalSkins && (
+            <select
+              className="skin-select"
+              aria-label="Skin"
+              value={skinId}
+              onChange={(event) => {
+                if (isSkinId(event.target.value)) setSkinId(event.target.value);
+                // Give the keyboard back to the game: arrow keys must not keep acting on the <select>.
+                event.target.blur();
+              }}
+            >
+              {SKIN_IDS.map((optionSkinId) => (
+                <option key={optionSkinId} value={optionSkinId}>
+                  {SKIN_LABELS[optionSkinId]}
+                </option>
+              ))}
+            </select>
+          )}
           <button type="button" className="btn yellow" onClick={() => setIsPaused((paused) => !paused)}>
             {isPaused ? "REANUDAR" : "PAUSA"}
           </button>
@@ -189,14 +213,18 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
       <div className="crt">
         <div className="crt-screen">
           {createEngine ? (
-            <GameCanvas
-              createEngine={createEngine}
-              isPaused={isPaused}
-              handleRef={canvasHandleRef}
-              label={`Pantalla de juego de ${gameTitle}`}
-              onSnapshotChange={handleSnapshotChange}
-              onGameOver={handleEngineGameOver}
-            />
+            // With global skins the canvas waits for the saved skin, so the first frame uses it.
+            (!usesGlobalSkins || isSkinReady) && (
+              <GameCanvas
+                createEngine={createEngine}
+                isPaused={isPaused}
+                skinId={usesGlobalSkins ? skinId : undefined}
+                handleRef={canvasHandleRef}
+                label={`Pantalla de juego de ${gameTitle}`}
+                onSnapshotChange={handleSnapshotChange}
+                onGameOver={handleEngineGameOver}
+              />
+            )
           ) : (
             <div className="game-arena">
               <div className="grid-floor"></div>

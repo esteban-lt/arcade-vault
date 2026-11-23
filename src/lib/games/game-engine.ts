@@ -1,5 +1,7 @@
 // Contract shared by every real (non-simulated) game engine.
 
+import type { SkinId } from "./shared/skins";
+
 export type GameSnapshot = {
   score: number;
   lives: number;
@@ -20,6 +22,9 @@ export type GameEngine = {
   endGame: () => void;
   // Cancels the animation frame and removes every listener.
   destroy: () => void;
+  // Optional: engines without it handle their own skin. Changing the skin only affects
+  // drawing, never score, lives, level or game logic.
+  setSkin?: (skinId: SkinId) => void;
 };
 
 export type GameEngineFactory = (
