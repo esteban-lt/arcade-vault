@@ -7,15 +7,13 @@ import {
   INITIAL_SNAKE_HEAD_ROW,
   INITIAL_SNAKE_LENGTH,
   MAXIMUM_QUEUED_TURNS,
-  SNAKE_BODY_COLOR,
-  SNAKE_CRASHED_HEAD_COLOR,
-  SNAKE_EYE_COLOR,
   SNAKE_EYE_SIZE_PIXELS,
-  SNAKE_HEAD_COLOR,
   SNAKE_SEGMENT_INSET_PIXELS,
   type Cell,
   type Direction,
 } from "./constants";
+import { drawSegment } from "./skin-draw";
+import type { FruitSnakeSkin } from "./skins";
 
 const DIRECTION_OFFSETS: Readonly<Record<Direction, Cell>> = {
   up: { column: 0, row: -1 },
@@ -91,27 +89,30 @@ export class Snake {
     return this.segments.some((segment) => isSameCell(segment, cell));
   }
 
-  draw(context: CanvasRenderingContext2D): void {
+  draw(context: CanvasRenderingContext2D, skin: FruitSnakeSkin): void {
     const segmentSize = CELL_SIZE_PIXELS - SNAKE_SEGMENT_INSET_PIXELS * 2;
     // Tail first, so the head is drawn on top.
     for (let index = this.segments.length - 1; index >= 0; index--) {
       const segment = this.segments[index];
+      let color = skin.snakeBodyColor;
       if (index === 0) {
-        context.fillStyle = this.isCrashed ? SNAKE_CRASHED_HEAD_COLOR : SNAKE_HEAD_COLOR;
-      } else {
-        context.fillStyle = SNAKE_BODY_COLOR;
+        color = this.isCrashed ? skin.snakeCrashedHeadColor : skin.snakeHeadColor;
+      } else if (skin.snakeBodyAlternateColor !== null && index % 2 === 1) {
+        color = skin.snakeBodyAlternateColor;
       }
-      context.fillRect(
+      drawSegment(
+        context,
+        skin,
         segment.column * CELL_SIZE_PIXELS + SNAKE_SEGMENT_INSET_PIXELS,
         segment.row * CELL_SIZE_PIXELS + SNAKE_SEGMENT_INSET_PIXELS,
         segmentSize,
-        segmentSize,
+        color,
       );
     }
-    this.drawEyes(context);
+    this.drawEyes(context, skin);
   }
 
-  private drawEyes(context: CanvasRenderingContext2D): void {
+  private drawEyes(context: CanvasRenderingContext2D, skin: FruitSnakeSkin): void {
     const head = this.segments[0];
     const centerX = head.column * CELL_SIZE_PIXELS + CELL_SIZE_PIXELS / 2;
     const centerY = head.row * CELL_SIZE_PIXELS + CELL_SIZE_PIXELS / 2;
@@ -119,13 +120,22 @@ export class Snake {
     // Eye centers: pushed toward the facing edge, spread across the perpendicular axis.
     const forwardDistance = CELL_SIZE_PIXELS / 2 - EYE_DISTANCE_FROM_FACING_EDGE_PIXELS - SNAKE_EYE_SIZE_PIXELS / 2;
     const sideDistance = EYE_SEPARATION_PIXELS / 2;
-    context.fillStyle = SNAKE_EYE_COLOR;
+    context.fillStyle = skin.snakeEyeColor;
     for (const side of [-1, 1]) {
       const eyeCenterX = centerX + forward.column * forwardDistance + forward.row * side * sideDistance;
       const eyeCenterY = centerY + forward.row * forwardDistance + forward.column * side * sideDistance;
+      if (skin.eyeShape === "round") {
+        context.beginPath();
+        context.arc(eyeCenterX, eyeCenterY, SNAKE_EYE_SIZE_PIXELS / 2 + 0.5, 0, Math.PI * 2);
+        context.fill();
+        continue;
+      }
+      // Pixelated skins keep the eyes on whole pixels.
+      const eyeX = eyeCenterX - SNAKE_EYE_SIZE_PIXELS / 2;
+      const eyeY = eyeCenterY - SNAKE_EYE_SIZE_PIXELS / 2;
       context.fillRect(
-        eyeCenterX - SNAKE_EYE_SIZE_PIXELS / 2,
-        eyeCenterY - SNAKE_EYE_SIZE_PIXELS / 2,
+        skin.isPixelated ? Math.round(eyeX) : eyeX,
+        skin.isPixelated ? Math.round(eyeY) : eyeY,
         SNAKE_EYE_SIZE_PIXELS,
         SNAKE_EYE_SIZE_PIXELS,
       );

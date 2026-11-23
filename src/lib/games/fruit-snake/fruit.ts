@@ -3,12 +3,11 @@ import {
   BOARD_COLUMNS,
   BOARD_ROWS,
   CELL_SIZE_PIXELS,
-  FRUIT_COLORS,
-  FRUIT_LEAF_COLOR,
-  FRUIT_STEM_COLOR,
   type Cell,
   type FruitKind,
 } from "./constants";
+import { fillEllipse, strokeStem } from "./skin-draw";
+import type { FruitSnakeSkin } from "./skins";
 import type { Snake } from "./snake";
 
 const FRUIT_KINDS: readonly FruitKind[] = ["apple", "cherry", "lemon", "grape"];
@@ -31,72 +30,72 @@ const GRAPE_OFFSETS: readonly { x: number; y: number }[] = [
   { x: 0, y: 6 },
 ];
 
-function fillCircle(context: CanvasRenderingContext2D, x: number, y: number, radius: number): void {
-  context.beginPath();
-  context.arc(x, y, radius, 0, Math.PI * 2);
-  context.fill();
-}
-
 export class Fruit {
   constructor(
     readonly cell: Cell,
     readonly kind: FruitKind,
   ) {}
 
-  draw(context: CanvasRenderingContext2D): void {
+  draw(context: CanvasRenderingContext2D, skin: FruitSnakeSkin): void {
     const centerX = this.cell.column * CELL_SIZE_PIXELS + CELL_SIZE_PIXELS / 2;
     const centerY = this.cell.row * CELL_SIZE_PIXELS + CELL_SIZE_PIXELS / 2;
     switch (this.kind) {
       case "apple":
-        this.drawApple(context, centerX, centerY);
+        this.drawApple(context, skin, centerX, centerY);
         break;
       case "cherry":
-        this.drawCherry(context, centerX, centerY);
+        this.drawCherry(context, skin, centerX, centerY);
         break;
       case "lemon":
-        context.fillStyle = FRUIT_COLORS.lemon;
-        context.beginPath();
-        context.ellipse(centerX, centerY, LEMON_RADIUS_X_PIXELS, LEMON_RADIUS_Y_PIXELS, 0, 0, Math.PI * 2);
-        context.fill();
+        fillEllipse(
+          context, skin, centerX, centerY, LEMON_RADIUS_X_PIXELS, LEMON_RADIUS_Y_PIXELS, 0, skin.fruitColors.lemon,
+        );
         break;
       case "grape":
-        context.fillStyle = FRUIT_COLORS.grape;
-        for (const offset of GRAPE_OFFSETS) fillCircle(context, centerX + offset.x, centerY + offset.y, GRAPE_RADIUS_PIXELS);
+        for (const offset of GRAPE_OFFSETS) {
+          fillEllipse(
+            context, skin, centerX + offset.x, centerY + offset.y,
+            GRAPE_RADIUS_PIXELS, GRAPE_RADIUS_PIXELS, 0, skin.fruitColors.grape,
+          );
+        }
         break;
     }
   }
 
-  private drawApple(context: CanvasRenderingContext2D, centerX: number, centerY: number): void {
-    context.fillStyle = FRUIT_COLORS.apple;
-    fillCircle(context, centerX, centerY, APPLE_RADIUS_PIXELS);
+  private drawApple(context: CanvasRenderingContext2D, skin: FruitSnakeSkin, centerX: number, centerY: number): void {
+    fillEllipse(
+      context, skin, centerX, centerY, APPLE_RADIUS_PIXELS, APPLE_RADIUS_PIXELS, 0, skin.fruitColors.apple,
+    );
     // Leaf on the top-right of the apple, tilted 45°.
-    context.fillStyle = FRUIT_LEAF_COLOR;
-    context.beginPath();
-    context.ellipse(
+    fillEllipse(
+      context,
+      skin,
       centerX + APPLE_LEAF_RADIUS_X_PIXELS,
       centerY - APPLE_RADIUS_PIXELS,
       APPLE_LEAF_RADIUS_X_PIXELS,
       APPLE_LEAF_RADIUS_Y_PIXELS,
       -Math.PI / 4,
-      0,
-      Math.PI * 2,
+      skin.fruitLeafColor,
     );
-    context.fill();
   }
 
-  private drawCherry(context: CanvasRenderingContext2D, centerX: number, centerY: number): void {
+  private drawCherry(context: CanvasRenderingContext2D, skin: FruitSnakeSkin, centerX: number, centerY: number): void {
     const cherryY = centerY + CHERRY_DROP_PIXELS;
     const halfSeparation = CHERRY_SEPARATION_PIXELS / 2;
-    context.strokeStyle = FRUIT_STEM_COLOR;
-    context.lineWidth = CHERRY_STEM_WIDTH_PIXELS;
-    context.beginPath();
     for (const side of [-1, 1]) {
-      context.moveTo(centerX + side * halfSeparation, cherryY - CHERRY_RADIUS_PIXELS);
-      context.lineTo(centerX, centerY - CHERRY_STEM_JOIN_HEIGHT_PIXELS);
+      strokeStem(
+        context, skin,
+        centerX + side * halfSeparation, cherryY - CHERRY_RADIUS_PIXELS,
+        centerX, centerY - CHERRY_STEM_JOIN_HEIGHT_PIXELS,
+        CHERRY_STEM_WIDTH_PIXELS,
+      );
     }
-    context.stroke();
-    context.fillStyle = FRUIT_COLORS.cherry;
-    for (const side of [-1, 1]) fillCircle(context, centerX + side * halfSeparation, cherryY, CHERRY_RADIUS_PIXELS);
+    for (const side of [-1, 1]) {
+      fillEllipse(
+        context, skin, centerX + side * halfSeparation, cherryY,
+        CHERRY_RADIUS_PIXELS, CHERRY_RADIUS_PIXELS, 0, skin.fruitColors.cherry,
+      );
+    }
   }
 }
 

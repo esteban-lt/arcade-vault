@@ -1,11 +1,9 @@
 import type { GameEngine, GameEngineCallbacks, GameEngineFactory, GameSnapshot } from "../game-engine";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, MAXIMUM_FRAME_SECONDS } from "../shared/canvas";
+import { MAXIMUM_FRAME_SECONDS } from "../shared/canvas";
 import { KeyboardInput } from "../shared/keyboard-input";
 import {
-  CELL_SIZE_PIXELS,
   FRUITS_PER_LEVEL,
   GAME_KEY_CODES,
-  GRID_LINE_COLOR,
   INITIAL_LIVES,
   INITIAL_STEP_INTERVAL_SECONDS,
   MINIMUM_STEP_INTERVAL_SECONDS,
@@ -14,6 +12,8 @@ import {
   type Direction,
 } from "./constants";
 import { spawnFruit, type Fruit } from "./fruit";
+import { drawBoard } from "./skin-draw";
+import { DEFAULT_SKIN_ID, SKINS, type SkinId } from "./skins";
 import { Snake } from "./snake";
 
 type FruitSnakePhase = "playing" | "game-over";
@@ -37,7 +37,9 @@ function stepIntervalSecondsForLevel(level: number): number {
 }
 
 class FruitSnakeEngine implements GameEngine {
+  private readonly canvas: HTMLCanvasElement;
   private readonly context: CanvasRenderingContext2D;
+  private skinId: SkinId = DEFAULT_SKIN_ID;
   private readonly callbacks: GameEngineCallbacks;
   private readonly input = new KeyboardInput(GAME_KEY_CODES);
 
@@ -58,6 +60,7 @@ class FruitSnakeEngine implements GameEngine {
   constructor(canvas: HTMLCanvasElement, callbacks: GameEngineCallbacks) {
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Fruit Snake: the 2D canvas context is not available.");
+    this.canvas = canvas;
     this.context = context;
     this.callbacks = callbacks;
   }
@@ -74,6 +77,11 @@ class FruitSnakeEngine implements GameEngine {
 
   restart(): void {
     this.startNewGame();
+  }
+
+  // The loop redraws every frame, also while paused and after game over, so the new skin shows at once.
+  setSkin(skinId: SkinId): void {
+    this.skinId = skinId;
   }
 
   endGame(): void {
@@ -196,19 +204,10 @@ class FruitSnakeEngine implements GameEngine {
 
   private draw(): void {
     const context = this.context;
-    context.fillStyle = "#000";
-    context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-    context.fillStyle = GRID_LINE_COLOR;
-    for (let x = CELL_SIZE_PIXELS; x < CANVAS_WIDTH; x += CELL_SIZE_PIXELS) {
-      context.fillRect(x, 0, 1, CANVAS_HEIGHT);
-    }
-    for (let y = CELL_SIZE_PIXELS; y < CANVAS_HEIGHT; y += CELL_SIZE_PIXELS) {
-      context.fillRect(0, y, CANVAS_WIDTH, 1);
-    }
-
-    this.fruit?.draw(context);
-    this.snake.draw(context);
+    const skin = SKINS[this.skinId];
+    drawBoard(context, skin);
+    this.fruit?.draw(context, skin);
+    this.snake.draw(context, skin);
   }
 }
 

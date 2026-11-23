@@ -27,16 +27,6 @@ export const MAXIMUM_QUEUED_TURNS = 2;
 export const FRUITS_PER_LEVEL = 5;
 export const POINTS_PER_FRUIT_PER_LEVEL = 10;
 
-// Drawing (flat vector on black)
-export const GRID_LINE_COLOR = "rgba(255,255,255,0.04)";
-export const SNAKE_BODY_COLOR = "#2fbf5a";
-export const SNAKE_HEAD_COLOR = "#7be08f";
-export const SNAKE_CRASHED_HEAD_COLOR = "#e04848";
-export const SNAKE_EYE_COLOR = "#000";
+// Drawing layout (colors and styles live in skins.ts)
 export const SNAKE_SEGMENT_INSET_PIXELS = 1; // segments are drawn 18×18 inside their cell
 export const SNAKE_EYE_SIZE_PIXELS = 3;
-export const FRUIT_COLORS: Record<FruitKind, string> = {
-  apple: "#e03a3a", cherry: "#c8203a", lemon: "#f0d040", grape: "#8a4fd0",
-};
-export const FRUIT_LEAF_COLOR = "#3cc05a";
-export const FRUIT_STEM_COLOR = "#6a8a3a";
