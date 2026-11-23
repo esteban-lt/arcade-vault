@@ -19,6 +19,8 @@ import { distanceBetween, randomBetween } from "../shared/math";
 import { Particle } from "./particle";
 import { PowerUp } from "./power-up";
 import { Ship } from "./ship";
+import { drawBlueprintGrid, resolveFont } from "./skin-draw";
+import { DEFAULT_SKIN_ID, SKINS, type SkinId } from "./skins";
 
 type AsteroidsPhase = "playing" | "respawning" | "game-over"; // "respawning" was 'dead' in game.js
 
@@ -28,6 +30,7 @@ const PARTICLES_PER_ASTEROID_SIZE = 5;
 class AsteroidsEngine implements GameEngine {
   private readonly context: CanvasRenderingContext2D;
   private readonly callbacks: GameEngineCallbacks;
+  private readonly canvas: HTMLCanvasElement;
   private readonly input = new KeyboardInput(GAME_KEY_CODES);
 
   private ship = new Ship();
@@ -47,10 +50,12 @@ class AsteroidsEngine implements GameEngine {
   private animationFrameId: number | null = null;
   private lastTimestamp: number | null = null;
   private lastEmittedSnapshot: GameSnapshot | null = null;
+  private skinId: SkinId = DEFAULT_SKIN_ID;
 
   constructor(canvas: HTMLCanvasElement, callbacks: GameEngineCallbacks) {
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Asteroids: the 2D canvas context is not available.");
+    this.canvas = canvas;
     this.context = context;
     this.callbacks = callbacks;
   }
@@ -67,6 +72,11 @@ class AsteroidsEngine implements GameEngine {
 
   restart(): void {
     this.startNewGame();
+  }
+
+  // The loop redraws every frame, also while paused, so the new skin shows at once.
+  setSkin(skinId: SkinId): void {
+    this.skinId = skinId;
   }
 
   endGame(): void {
@@ -276,14 +286,18 @@ class AsteroidsEngine implements GameEngine {
 
   private draw(): void {
     const { context } = this;
-    context.fillStyle = "#000";
+    const skin = SKINS[this.skinId];
+    context.imageSmoothingEnabled = !skin.isPixelated;
+    context.fillStyle = skin.backgroundColor;
     context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    this.particles.forEach((particle) => particle.draw(context));
-    this.asteroids.forEach((asteroid) => asteroid.draw(context));
-    this.powerUps.forEach((powerUp) => powerUp.draw(context));
-    this.bullets.forEach((bullet) => bullet.draw(context));
-    this.ship.draw(context);
+    drawBlueprintGrid(context, skin, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    this.particles.forEach((particle) => particle.draw(context, skin));
+    this.asteroids.forEach((asteroid) => asteroid.draw(context, skin));
+    this.powerUps.forEach((powerUp) => powerUp.draw(context, skin));
+    this.bullets.forEach((bullet) => bullet.draw(context, skin));
+    this.ship.draw(context, skin);
 
     this.drawTripleShotIndicator();
   }
@@ -291,11 +305,18 @@ class AsteroidsEngine implements GameEngine {
   private drawTripleShotIndicator(): void {
     if (this.ship.tripleShotSecondsRemaining <= 0) return;
     const { context } = this;
-    context.fillStyle = "#0ff";
-    context.font = "15px monospace";
+    const skin = SKINS[this.skinId];
+    context.save();
+    context.fillStyle = skin.powerUpColor;
+    if (skin.glowBlurPixels > 0) {
+      context.shadowColor = skin.powerUpColor;
+      context.shadowBlur = skin.glowBlurPixels / 2;
+    }
+    context.font = resolveFont(skin, "normal", skin.indicatorFontSizePixels);
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
     context.fillText(`3x  ${this.ship.tripleShotSecondsRemaining.toFixed(1)}s`, 14, 26);
+    context.restore();
   }
 }
 
