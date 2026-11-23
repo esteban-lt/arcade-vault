@@ -5,6 +5,7 @@ const GAME_IDS_WITH_GLOBAL_SKINS: ReadonlySet<string> = new Set<string>([
   "asteroids",
   "block-stack",
   "wall-breaker",
+  "fruit-snake",
 ]);
 
 export function hasGlobalSkins(gameId: string): boolean {
