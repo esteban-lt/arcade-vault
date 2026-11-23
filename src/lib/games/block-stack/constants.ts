@@ -22,16 +22,6 @@ export const PIECE_SHAPES: Readonly<Record<PieceType, readonly (readonly number[
   6: [[6, 0, 0], [6, 6, 6], [0, 0, 0]], // J
   7: [[0, 0, 7], [7, 7, 7], [0, 0, 0]], // L
 };
-export const PIECE_COLORS: Readonly<Record<PieceType, string>> = {
-  1: "#4dd0e1",
-  2: "#ffd54f",
-  3: "#ba68c8",
-  4: "#81c784",
-  5: "#e57373",
-  6: "#90caf9",
-  7: "#ffb74d",
-};
-
 export const ROTATION_KICK_OFFSETS = [0, -1, 1, -2, 2] as const;
 
 export const INITIAL_DROP_INTERVAL_SECONDS = 1;
@@ -46,16 +36,5 @@ export const HARD_DROP_POINTS_PER_ROW = 2;
 export const KEY_REPEAT_DELAY_SECONDS = 0.17;
 export const KEY_REPEAT_INTERVAL_SECONDS = 0.05;
 
-// Drawing (dark theme of style.css)
-export const BOARD_BACKGROUND_COLOR = "#1a1a25";
-export const BOARD_BORDER_COLOR = "#2a2a3a";
-export const GRID_LINE_COLOR = "#22222e";
-export const GRID_LINE_WIDTH_PIXELS = 0.5;
-export const BLOCK_INSET_PIXELS = 1;
-export const BLOCK_HIGHLIGHT_HEIGHT_PIXELS = 4;
-export const BLOCK_HIGHLIGHT_COLOR = "rgba(255,255,255,0.12)";
-export const GHOST_PIECE_ALPHA = 0.2;
-export const PANEL_LABEL_COLOR = "#555570";
-export const PANEL_VALUE_COLOR = "#7aa2f7";
-export const PANEL_TEXT_COLOR = "#888888";
+// Layout
 export const NEXT_PREVIEW_SIZE_CELLS = 4; // 4 × 30 = 120 px box
