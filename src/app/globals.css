@@ -907,7 +907,33 @@ a {
   }
   .hud-stat.lives .v { color: var(--magenta); text-shadow: 0 0 6px rgba(255, 0, 110, 0.5); }
   .hud-stat.level .v { color: var(--yellow); text-shadow: 0 0 6px rgba(245, 255, 0, 0.5); }
-  .hud-actions { display: flex; gap: 10px; }
+  .hud-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Skin selector of the player bar (games with global skins) */
+  .skin-select {
+    appearance: none;
+    background-color: var(--bg-2);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%2300f5ff' stroke-width='1.5'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 10px 6px;
+    color: var(--cyan);
+    border: 1px solid var(--line);
+    font-family: var(--pixel);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 11px 32px 11px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .skin-select:hover,
+  .skin-select:focus-visible {
+    border-color: var(--cyan);
+    box-shadow: 0 0 8px rgba(0, 245, 255, 0.35);
+    outline: none;
+  }
+  .skin-select option { background: var(--bg-2); color: var(--ink); }
 
   .crt {
     position: relative;
