@@ -150,6 +150,7 @@ Integración (comunes a todos los juegos reales):
 - [ ] Con sesión y puntuación > 0, "GUARDAR PUNTUACIÓN" crea una fila en `scores` con `game_id = '<game-id>'` y la marca aparece en `/games/<game-id>` y `/hall-of-fame?game=<game-id>`.
 - [ ] Sin sesión, el modal muestra "INICIA SESIÓN PARA GUARDAR TU PUNTUACIÓN".
 - [ ] `public.games` contiene `<game-id>` con `accepts_scores = true`, sus ids coinciden con `GAMES`, `supabase/migrations/` contiene el SQL aplicado y `get_advisors` no reporta problemas nuevos.
+- [ ] El juego ofrece las 4 skins (`classic`, `neon`, `pixel-art`, `experimental`) según `skins-guide.md`: el `<select>` del player las lista, cambiar de skin no reinicia ni altera la partida, y la skin `experimental` es única entre los juegos.
 - [ ] `/games/asteroids/play` funciona igual que antes y los juegos sin motor mantienen la simulación.
 - [ ] Ningún archivo nuevo usa `any` ni variables globales de módulo mutables.
 

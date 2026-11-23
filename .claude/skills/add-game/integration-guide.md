@@ -16,6 +16,7 @@ Before implementing: reread the relevant guides in `node_modules/next/dist/docs/
 | `src/lib/games/engine-registry.ts` | `GAME_ENGINE_FACTORIES` (`gameId → factory`), `findGameEngineFactory` | **Yes, one entry** |
 | `src/components/game-canvas.tsx` | Creates the `<canvas>`, creates the engine in `useEffect`, `destroy()` on cleanup, forwards `isPaused`, exposes `restart`/`endGame` | No (only its import in §3) |
 | `src/components/game-player.tsx` | HUD (Jugador, Puntuación, Vidas, Nivel), pause (`P`/`Esc`/button), FIN, modal "FIN DEL JUEGO", save button | No |
+| `src/lib/games/<game-id>/skins.ts`, `skin-draw.ts` + `src/lib/games/skin-registry.ts` | The 4 skins and `setSkin` (see `skins-guide.md`); one id in `GAME_IDS_WITH_GLOBAL_SKINS` | **Yes** |
 | `src/lib/games.ts` | `GAMES` catalog (UI, `proxy.ts`, `generateStaticParams`) | **Yes, one entry** (or edit an existing one) |
 | `src/app/globals.css` | `.cover-<id>` card cover | **Yes** |
 | `supabase/migrations/` + table `public.games` | Reference row with `accepts_scores` | **Yes, one migration** |
@@ -261,6 +262,7 @@ Used after the last plan step, when `/spec-impl` asks to verify the acceptance c
 - Leave with SALIR / VOLVER AL VAULT, then come back with the Back button: fresh game, no modal or pause inherited, one engine.
 - Dev mode (Strict Mode): only one engine running.
 - With session: GUARDAR PUNTUACIÓN creates a row in `scores` and it appears in `/games/<game-id>` and `/hall-of-fame?game=<game-id>`. Without session: login notice.
+- Skins: the checklist of `skins-guide.md` §7 (select in the player bar, 4 skins, `experimental` unique).
 - `/games/asteroids/play` and a simulated game (`/games/block-fall/play`) still behave as before.
 - Width ≤ 480 px: canvas scales at 4:3 with no horizontal scroll.
 - No hydration warnings in the console.
