@@ -173,6 +173,8 @@ a {
   /* por encima de .av-bg (z 0) y .av-noise (z 1), que son fixed y opacos */
   position: relative;
   z-index: 2;
+  /* flex item de columna: sin esto el contenido ancho (tabla, chips) lo ensancha más que el viewport */
+  min-width: 0;
 }
 
 @layer components {
@@ -1408,7 +1410,7 @@ a {
   .hall-table .th,
   .hall-table .tr {
     display: grid;
-    grid-template-columns: 70px 1fr 1fr 140px;
+    grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1fr) 140px;
     align-items: center;
     padding: 12px 18px;
     font-family: var(--mono);
@@ -1433,7 +1435,7 @@ a {
     padding-left: 15px;
   }
   .hall-table .tr .rk { font-family: var(--pixel); font-size: 11px; color: var(--ink-dim); }
-  .hall-table .tr .pl { color: var(--ink); }
+  .hall-table .tr .pl { color: var(--ink); overflow-wrap: anywhere; }
   .hall-table .tr .sc {
     font-family: var(--pixel);
     font-size: 12px;
@@ -1463,10 +1465,13 @@ a {
   @media (max-width: 720px) {
     .hall-table .th,
     .hall-table .tr {
-      grid-template-columns: 50px 1fr 90px 90px;
+      grid-template-columns: 44px minmax(0, 1fr) 90px 78px;
+      gap: 6px;
       font-size: 12px;
       padding: 10px 12px;
     }
+    .hall-table .th { font-size: 8px; letter-spacing: 0.02em; }
+    .hall-table .th > * { min-width: 0; overflow: hidden; text-overflow: clip; white-space: nowrap; }
     .av-grid { padding: 0 16px; }
     .av-hero { padding: 36px 16px 16px; }
     .av-filters { padding: 0 16px; }
@@ -1902,6 +1907,25 @@ a {
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   }
   @keyframes spinpix { to { transform: rotate(360deg); } }
+
+  /* ===== objetivos táctiles >= 44px en las páginas (no el player) ===== */
+  @media (max-width: 1180px), (pointer: coarse) {
+    .av-nav .logo,
+    .av-nav .btn,
+    .av-filters .chip,
+    .hall-tabs .chip,
+    .card .btn,
+    .lb-link,
+    .auth-tabs button,
+    .auth-card .btn,
+    .social .btn,
+    .contact-form .btn {
+      min-height: 44px;
+    }
+    .lb-link { display: inline-flex; align-items: center; }
+    .av-nav .hamburger { min-width: 44px; }
+    .av-search input { align-self: stretch; min-height: 44px; }
+  }
 }
 
 /* ===== accesibilidad: respeta "reducir movimiento" ===== */
