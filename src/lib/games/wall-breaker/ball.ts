@@ -1,11 +1,12 @@
 import { CANVAS_WIDTH } from "../shared/canvas";
 import {
-  BALL_COLOR,
   BALL_SIZE_PIXELS,
   BASE_BALL_HORIZONTAL_VELOCITY_PIXELS_PER_SECOND,
   BASE_BALL_VERTICAL_VELOCITY_PIXELS_PER_SECOND,
 } from "./constants";
 import type { Paddle } from "./paddle";
+import { clearGlow, setGlow, snap } from "./skin-draw";
+import type { WallBreakerSkin } from "./skins";
 
 // Position is the top-left corner of the 16×16 box used for every collision.
 export class Ball {
@@ -45,10 +46,22 @@ export class Ball {
     }
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    context.fillStyle = BALL_COLOR;
-    context.beginPath();
-    context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
-    context.fill();
+  draw(context: CanvasRenderingContext2D, skin: WallBreakerSkin): void {
+    context.fillStyle = skin.ballColor;
+    if (skin.glowBlurPixels > 0) setGlow(context, skin.ballColor, skin.glowBlurPixels);
+    if (skin.ballShape === "square") {
+      context.fillRect(snap(skin, this.x), snap(skin, this.y), this.width, this.height);
+    } else {
+      context.beginPath();
+      context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
+      context.fill();
+      if (skin.ballOutlineColor) {
+        clearGlow(context);
+        context.strokeStyle = skin.ballOutlineColor;
+        context.lineWidth = skin.ballOutlineWidthPixels;
+        context.stroke();
+      }
+    }
+    clearGlow(context);
   }
 }

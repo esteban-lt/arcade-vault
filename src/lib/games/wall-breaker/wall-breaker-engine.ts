@@ -1,5 +1,5 @@
 import type { GameEngine, GameEngineCallbacks, GameEngineFactory, GameSnapshot } from "../game-engine";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, MAXIMUM_FRAME_SECONDS } from "../shared/canvas";
+import { CANVAS_HEIGHT, MAXIMUM_FRAME_SECONDS } from "../shared/canvas";
 import { KeyboardInput } from "../shared/keyboard-input";
 import { Ball } from "./ball";
 import { Block, createLevelBlocks, Explosion, rectanglesOverlap } from "./block";
@@ -7,6 +7,8 @@ import { CanvasPointerInput } from "./canvas-pointer-input";
 import { GAME_KEY_CODES, INITIAL_LIVES, PADDLE_BOUNCE_TOLERANCE_PIXELS, POINTS_PER_BLOCK } from "./constants";
 import { LEVEL_DEFINITIONS } from "./levels";
 import { Paddle } from "./paddle";
+import { applySmoothing, drawBackground } from "./skin-draw";
+import { DEFAULT_SKIN_ID, SKINS, type SkinId } from "./skins";
 
 type WallBreakerPhase = "playing" | "game-over";
 
@@ -30,6 +32,9 @@ class WallBreakerEngine implements GameEngine {
   private lastTimestamp: number | null = null;
   private lastEmittedSnapshot: GameSnapshot | null = null;
 
+  private skinId: SkinId = DEFAULT_SKIN_ID;
+  private clockSeconds = 0; // visual only: drives the animated backdrop of the experimental skin
+
   constructor(canvas: HTMLCanvasElement, callbacks: GameEngineCallbacks) {
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Wall Breaker: the 2D canvas context is not available.");
@@ -42,6 +47,11 @@ class WallBreakerEngine implements GameEngine {
     if (this.animationFrameId !== null) return;
     this.startNewGame();
     this.animationFrameId = requestAnimationFrame(this.loop);
+  }
+
+  // The loop redraws every frame, also while paused and after game over, so the new skin shows at once.
+  setSkin(skinId: SkinId): void {
+    this.skinId = skinId;
   }
 
   setPaused(isPaused: boolean): void {
@@ -117,6 +127,7 @@ class WallBreakerEngine implements GameEngine {
   // ── Update ────────────────────────────────────────────────────────────────────
 
   private readonly loop = (timestamp: number): void => {
+    this.clockSeconds = timestamp / 1000;
     if (this.isPaused) {
       // Forget the timestamp so resuming does not count the paused time, and discard
       // mouse moves made while paused so the paddle does not jump when the game resumes.
@@ -220,14 +231,15 @@ class WallBreakerEngine implements GameEngine {
   // Entities only: no score, lives, level, pause, game over or victory text.
   private draw(): void {
     const context = this.context;
-    context.fillStyle = "#000";
-    context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    const skin = SKINS[this.skinId];
+    applySmoothing(context, skin);
+    drawBackground(context, skin, this.clockSeconds);
     for (const block of this.blocks) {
-      if (!block.isDestroyed) block.draw(context);
+      if (!block.isDestroyed) block.draw(context, skin);
     }
-    for (const explosion of this.explosions) explosion.draw(context);
-    this.paddle.draw(context);
-    this.ball.draw(context);
+    for (const explosion of this.explosions) explosion.draw(context, skin);
+    this.paddle.draw(context, skin);
+    this.ball.draw(context, skin);
   }
 }
 

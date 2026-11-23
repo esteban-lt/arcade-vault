@@ -1,14 +1,13 @@
 import { CANVAS_WIDTH } from "../shared/canvas";
 import type { KeyboardInput } from "../shared/keyboard-input";
 import {
-  PADDLE_COLOR,
-  PADDLE_END_COLOR,
-  PADDLE_END_WIDTH_PIXELS,
   PADDLE_HEIGHT_PIXELS,
   PADDLE_SPEED_PIXELS_PER_SECOND,
   PADDLE_TOP_PIXELS,
   PADDLE_WIDTH_PIXELS,
 } from "./constants";
+import { clearGlow, setGlow, snap } from "./skin-draw";
+import type { WallBreakerSkin } from "./skins";
 
 const MAXIMUM_PADDLE_X = CANVAS_WIDTH - PADDLE_WIDTH_PIXELS;
 
@@ -35,11 +34,16 @@ export class Paddle {
     if (input.isHeld("ArrowRight")) this.x = clampPaddleX(this.x + PADDLE_SPEED_PIXELS_PER_SECOND * deltaSeconds);
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    context.fillStyle = PADDLE_COLOR;
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.fillStyle = PADDLE_END_COLOR;
-    context.fillRect(this.x, this.y, PADDLE_END_WIDTH_PIXELS, this.height);
-    context.fillRect(this.x + this.width - PADDLE_END_WIDTH_PIXELS, this.y, PADDLE_END_WIDTH_PIXELS, this.height);
+  draw(context: CanvasRenderingContext2D, skin: WallBreakerSkin): void {
+    const x = snap(skin, this.x);
+    const endWidth = skin.paddleEndWidthPixels;
+    const width = snap(skin, this.width);
+    context.fillStyle = skin.paddleColor;
+    if (skin.glowBlurPixels > 0) setGlow(context, skin.paddleColor, skin.glowBlurPixels);
+    context.fillRect(x, this.y, width, this.height);
+    clearGlow(context);
+    context.fillStyle = skin.paddleEndColor;
+    context.fillRect(x, this.y, endWidth, this.height);
+    context.fillRect(x + width - endWidth, this.y, endWidth, this.height);
   }
 }
