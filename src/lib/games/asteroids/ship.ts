@@ -6,6 +6,8 @@ import {
 } from "./constants";
 import type { KeyboardInput } from "../shared/keyboard-input";
 import { randomBetween, wrapCoordinate } from "../shared/math";
+import { drawHeadingLine, strokePath, toWorldPoint, type Point } from "./skin-draw";
+import type { AsteroidsSkin } from "./skins";
 
 const ROTATION_SPEED_RADIANS_PER_SECOND = 3.5;
 const THRUST_PIXELS_PER_SECOND_SQUARED = 260;
@@ -76,39 +78,26 @@ export class Ship {
     return [new Bullet(originX, originY, this.angle)];
   }
 
-  draw(context: CanvasRenderingContext2D): void {
+  draw(context: CanvasRenderingContext2D, skin: AsteroidsSkin): void {
     if (this.isDead) return;
     // Blink while invincible after spawning.
     if (this.invincibleSecondsRemaining > 0 && Math.floor(this.invincibleSecondsRemaining * 8) % 2 === 0) {
       return;
     }
 
-    context.save();
-    context.translate(this.x, this.y);
-    context.rotate(this.angle);
-    context.strokeStyle = "#fff";
-    context.lineWidth = 1.5;
-    context.lineJoin = "round";
+    // Blueprint skin: dashed heading line ahead of the nose, under the hull.
+    drawHeadingLine(context, skin, this.x + Math.cos(this.angle) * NOSE_DISTANCE, this.y + Math.sin(this.angle) * NOSE_DISTANCE, this.angle);
 
-    // Classic silhouette: triangle with a rear notch.
-    context.beginPath();
-    context.moveTo(20, 0); // nose
-    context.lineTo(-12, -9); // left wing
-    context.lineTo(-7, 0); // rear notch
-    context.lineTo(-12, 9); // right wing
-    context.closePath();
-    context.stroke();
+    const toWorld = (local: Point): Point => toWorldPoint(local, this.x, this.y, this.angle);
+
+    // Classic silhouette: triangle with a rear notch (nose, left wing, rear notch, right wing).
+    const hull = ([[20, 0], [-12, -9], [-7, 0], [-12, 9]] as Point[]).map(toWorld);
+    strokePath(context, skin, hull, skin.shipColor, skin.shipLineWidthPixels, true);
 
     // Thruster flame, flickering.
     if (this.isThrusting && Math.random() > 0.35) {
-      context.beginPath();
-      context.moveTo(-8, -4);
-      context.lineTo(-8 - randomBetween(6, 14), 0);
-      context.lineTo(-8, 4);
-      context.strokeStyle = "rgba(255, 130, 0, 0.85)";
-      context.stroke();
+      const flame = ([[-8, -4], [-8 - randomBetween(6, 14), 0], [-8, 4]] as Point[]).map(toWorld);
+      strokePath(context, skin, flame, skin.shipFlameColor, skin.shipLineWidthPixels, false);
     }
-
-    context.restore();
   }
 }

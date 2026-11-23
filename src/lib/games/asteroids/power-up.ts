@@ -1,6 +1,8 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../shared/canvas";
 import { POWER_UP_LIFETIME_SECONDS } from "./constants";
 import { randomBetween, wrapCoordinate } from "../shared/math";
+import { resolveFont, strokePath, type Point } from "./skin-draw";
+import type { AsteroidsSkin } from "./skins";
 
 const POWER_UP_RADIUS = 12;
 const BLINK_WHEN_REMAINING_BELOW_SECONDS = 2;
@@ -31,26 +33,33 @@ export class PowerUp {
     if (this.remainingLifetimeSeconds <= 0) this.isDead = true;
   }
 
-  draw(context: CanvasRenderingContext2D): void {
+  draw(context: CanvasRenderingContext2D, skin: AsteroidsSkin): void {
     const isBlinkedOut =
       this.remainingLifetimeSeconds < BLINK_WHEN_REMAINING_BELOW_SECONDS &&
       Math.floor(this.remainingLifetimeSeconds * 8) % 2 === 0;
     if (isBlinkedOut) return;
 
     const pulse = 0.85 + Math.sin(performance.now() / 150) * 0.15;
-    const pulsingRadius = this.radius * pulse;
-    context.save();
-    context.translate(this.x, this.y);
-    context.rotate(Math.PI / 4);
-    context.strokeStyle = "#0ff";
-    context.lineWidth = 2;
-    context.strokeRect(-pulsingRadius, -pulsingRadius, pulsingRadius * 2, pulsingRadius * 2);
-    context.restore();
+    const reach = this.radius * pulse * Math.SQRT2;
+    // A square rotated 45 degrees, given as world-space corners.
+    const diamond: Point[] = [
+      [this.x, this.y - reach],
+      [this.x + reach, this.y],
+      [this.x, this.y + reach],
+      [this.x - reach, this.y],
+    ];
+    strokePath(context, skin, diamond, skin.powerUpColor, skin.powerUpLineWidthPixels, true, skin.powerUpDashPattern);
 
-    context.fillStyle = "#0ff";
-    context.font = "bold 12px monospace";
+    context.save();
+    context.fillStyle = skin.powerUpColor;
+    if (skin.glowBlurPixels > 0) {
+      context.shadowColor = skin.powerUpColor;
+      context.shadowBlur = skin.glowBlurPixels / 2;
+    }
+    context.font = resolveFont(skin, skin.powerUpFontWeight, skin.powerUpFontSizePixels);
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText("3x", this.x, this.y);
+    context.restore();
   }
 }

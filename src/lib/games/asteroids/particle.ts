@@ -1,4 +1,6 @@
 import { randomBetween } from "../shared/math";
+import { snapToGrid } from "./skin-draw";
+import type { AsteroidsSkin } from "./skins";
 
 const TRAIL_LENGTH_FACTOR = 0.05;
 
@@ -30,16 +32,24 @@ export class Particle {
     if (this.remainingLifetimeSeconds <= 0) this.isDead = true;
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    const alpha = this.remainingLifetimeSeconds / this.totalLifetimeSeconds;
-    context.strokeStyle = `rgba(255,255,255,${alpha.toFixed(2)})`;
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(this.x, this.y);
-    context.lineTo(
-      this.x - this.velocityX * TRAIL_LENGTH_FACTOR,
-      this.y - this.velocityY * TRAIL_LENGTH_FACTOR,
-    );
-    context.stroke();
+  draw(context: CanvasRenderingContext2D, skin: AsteroidsSkin): void {
+    context.save();
+    context.globalAlpha = this.remainingLifetimeSeconds / this.totalLifetimeSeconds;
+    if (skin.isPixelated) {
+      const block = skin.pixelSizePixels;
+      context.fillStyle = skin.particleColor;
+      context.fillRect(snapToGrid(this.x, block), snapToGrid(this.y, block), block, block);
+    } else {
+      context.strokeStyle = skin.particleColor;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(this.x, this.y);
+      context.lineTo(
+        this.x - this.velocityX * TRAIL_LENGTH_FACTOR,
+        this.y - this.velocityY * TRAIL_LENGTH_FACTOR,
+      );
+      context.stroke();
+    }
+    context.restore();
   }
 }

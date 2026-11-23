@@ -5,8 +5,8 @@ import {
   type AsteroidSize,
 } from "./constants";
 import { randomBetween, randomIntegerBetween, wrapCoordinate } from "../shared/math";
-
-type Vertex = readonly [x: number, y: number];
+import { drawDimensionMarks, strokePath, toWorldPoint, type Point } from "./skin-draw";
+import type { AsteroidsSkin } from "./skins";
 
 export class Asteroid {
   x: number;
@@ -19,7 +19,7 @@ export class Asteroid {
   private readonly rotationSpeed: number;
   private rotation: number;
   // Irregular polygon, in coordinates relative to the asteroid center.
-  private readonly vertices: Vertex[] = [];
+  private readonly vertices: Point[] = [];
 
   constructor(x: number, y: number, size: AsteroidSize = 3) {
     this.x = x;
@@ -58,22 +58,17 @@ export class Asteroid {
     ];
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    context.save();
-    context.translate(this.x, this.y);
-    context.rotate(this.rotation);
-    context.strokeStyle = "#fff";
-    context.lineWidth = 1.5;
-    context.lineJoin = "round";
-    context.beginPath();
-    const [firstX, firstY] = this.vertices[0];
-    context.moveTo(firstX, firstY);
-    for (let index = 1; index < this.vertices.length; index++) {
-      const [vertexX, vertexY] = this.vertices[index];
-      context.lineTo(vertexX, vertexY);
-    }
-    context.closePath();
-    context.stroke();
-    context.restore();
+  draw(context: CanvasRenderingContext2D, skin: AsteroidsSkin): void {
+    const worldVertices = this.vertices.map((vertex) => toWorldPoint(vertex, this.x, this.y, this.rotation));
+    strokePath(
+      context,
+      skin,
+      worldVertices,
+      skin.asteroidColors[this.size],
+      skin.asteroidLineWidthPixels,
+      true,
+      skin.asteroidDashPatterns[this.size],
+    );
+    drawDimensionMarks(context, skin, this.x, this.y, this.radius, this.size === 3);
   }
 }
