@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { GameCanvas, type GameCanvasHandle } from "@/components/game-canvas";
+import { TouchGamepad } from "@/components/touch-gamepad";
+import { findTouchControls } from "@/lib/games/touch-controls-registry";
 import { findGameEngineFactory } from "@/lib/games/engine-registry";
 import type { GameSnapshot } from "@/lib/games/game-engine";
 import { isSkinId, SKIN_IDS, SKIN_LABELS } from "@/lib/games/shared/skins";
@@ -36,6 +38,8 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
   // Games in the skin registry take their skin from here; the rest handle it themselves.
   const usesGlobalSkins = hasGlobalSkins(gameId);
   const { skinId, setSkinId, isReady: isSkinReady } = useStoredSkin(gameId);
+  // Games in the touch registry show an on-screen gamepad on touch devices (CSS decides).
+  const touchControls = findTouchControls(gameId);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(PLAYER_LIVES);
   const [engineLevel, setEngineLevel] = useState(1);
@@ -161,7 +165,7 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
   return (
     <div className="av-player fade-in">
       <div className="player-hud">
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+        <div className="hud-stats">
           <div className="hud-stat">
             <div className="l">Jugador</div>
             <div className="v" style={{ color: "var(--ink)" }}>{playerName}</div>
@@ -210,6 +214,7 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
         </div>
       </div>
 
+      <div className="player-stage">
       <div className="crt">
         <div className="crt-screen">
           {createEngine ? (
@@ -253,6 +258,10 @@ export function GamePlayer({ gameId, gameTitle }: GamePlayerProps) {
           <span>{gameTitle} · CRT-83 · 60 HZ</span>
           <span>CARGA · 1MB</span>
         </div>
+      </div>
+      {createEngine && touchControls && (
+        <TouchGamepad controls={touchControls} isDisabled={isPaused || isGameOver} />
+      )}
       </div>
 
       {isGameOver && (
