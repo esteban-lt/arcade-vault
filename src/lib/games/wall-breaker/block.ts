@@ -1,9 +1,5 @@
 import {
-  BLOCK_FILL_COLORS,
   BLOCK_HEIGHT_PIXELS,
-  BLOCK_HIGHLIGHT_COLOR,
-  BLOCK_HIGHLIGHT_HEIGHT_PIXELS,
-  BLOCK_INSET_PIXELS,
   BLOCK_WIDTH_PIXELS,
   BLOCKS_ORIGIN_LEFT_PIXELS,
   BLOCKS_ORIGIN_TOP_PIXELS,
@@ -13,6 +9,8 @@ import {
   type BlockColor,
 } from "./constants";
 import type { LevelDefinition } from "./levels";
+import { clearGlow, drawBlockBody, setGlow, snap } from "./skin-draw";
+import type { WallBreakerSkin } from "./skins";
 
 export type Rectangle = { x: number; y: number; width: number; height: number };
 
@@ -40,15 +38,16 @@ export class Block {
     this.color = color;
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    const x = this.x + BLOCK_INSET_PIXELS;
-    const y = this.y + BLOCK_INSET_PIXELS;
-    const width = this.width - BLOCK_INSET_PIXELS * 2;
-    const height = this.height - BLOCK_INSET_PIXELS * 2;
-    context.fillStyle = BLOCK_FILL_COLORS[this.color];
-    context.fillRect(x, y, width, height);
-    context.fillStyle = BLOCK_HIGHLIGHT_COLOR;
-    context.fillRect(x, y, width, BLOCK_HIGHLIGHT_HEIGHT_PIXELS);
+  draw(context: CanvasRenderingContext2D, skin: WallBreakerSkin): void {
+    const inset = skin.blockInsetPixels;
+    const x = this.x + inset;
+    const y = this.y + inset;
+    const width = this.width - inset * 2;
+    const height = this.height - inset * 2;
+    const color = skin.blockColors[this.color];
+    if (skin.blockGlowBlurPixels > 0) setGlow(context, color, skin.blockGlowBlurPixels);
+    drawBlockBody(context, skin, skin.blockPatterns[this.color], color, x, y, width, height);
+    clearGlow(context);
   }
 }
 
@@ -80,7 +79,7 @@ export class Explosion {
     if (this.elapsedSeconds >= EXPLOSION_DURATION_SECONDS) this.isDead = true;
   }
 
-  draw(context: CanvasRenderingContext2D): void {
+  draw(context: CanvasRenderingContext2D, skin: WallBreakerSkin): void {
     const frameCount = EXPLOSION_FRAME_ALPHAS.length;
     const frameIndex = Math.min(
       Math.floor((this.elapsedSeconds / EXPLOSION_DURATION_SECONDS) * frameCount),
@@ -91,8 +90,13 @@ export class Explosion {
     const height = this.height * scale;
     context.save();
     context.globalAlpha = EXPLOSION_FRAME_ALPHAS[frameIndex];
-    context.fillStyle = BLOCK_FILL_COLORS[this.color];
-    context.fillRect(this.x + (this.width - width) / 2, this.y + (this.height - height) / 2, width, height);
+    context.fillStyle = skin.blockColors[this.color];
+    context.fillRect(
+      snap(skin, this.x + (this.width - width) / 2),
+      snap(skin, this.y + (this.height - height) / 2),
+      snap(skin, width),
+      snap(skin, height),
+    );
     context.restore();
   }
 }

@@ -27,21 +27,5 @@ export const EXPLOSION_DURATION_SECONDS = 0.15;
 export const EXPLOSION_FRAME_ALPHAS = [1, 0.75, 0.5, 0.25] as const; // one per frame
 export const EXPLOSION_FRAME_SCALES = [1, 0.8, 0.6, 0.4] as const; // size relative to the block, centered
 
-// Drawing (flat vector, tones of the original spritesheet)
+// Block colors are roles; the actual tones live in skins.ts.
 export type BlockColor = "red" | "yellow" | "cyan" | "magenta" | "hotpink" | "green" | "gray";
-export const BLOCK_FILL_COLORS: Readonly<Record<BlockColor, string>> = {
-  red: "#d83a4a",
-  yellow: "#e8b830",
-  cyan: "#3aa8e0",
-  magenta: "#7a4ee0",
-  hotpink: "#e05aa0",
-  green: "#3cc08a",
-  gray: "#6a6a7a",
-};
-export const BLOCK_INSET_PIXELS = 1;
-export const BLOCK_HIGHLIGHT_HEIGHT_PIXELS = 3;
-export const BLOCK_HIGHLIGHT_COLOR = "rgba(255,255,255,0.25)";
-export const PADDLE_COLOR = "#d8d8e0";
-export const PADDLE_END_COLOR = "#d83a4a";
-export const PADDLE_END_WIDTH_PIXELS = 6;
-export const BALL_COLOR = "#e0e0e8";
